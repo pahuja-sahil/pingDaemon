@@ -1,4 +1,4 @@
-from celery import shared_task
+from ..celery_worker import celery_app
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from datetime import datetime, timedelta
@@ -9,7 +9,7 @@ from ..models.job import Job
 from ..services.health_service import HealthService
 
 
-@shared_task(bind=True)
+@celery_app.task(bind=True)
 def check_single_job(self, job_id: str) -> Dict[str, Any]:
     """
     Check health of a single job
@@ -55,7 +55,7 @@ def check_single_job(self, job_id: str) -> Dict[str, Any]:
         db.close()
 
 
-@shared_task
+@celery_app.task
 def check_all_active_jobs() -> Dict[str, Any]:
     """
     Check health of all active (enabled) jobs
@@ -106,7 +106,7 @@ def check_all_active_jobs() -> Dict[str, Any]:
         db.close()
 
 
-@shared_task
+@celery_app.task
 def check_jobs_by_interval(interval_minutes: int) -> Dict[str, Any]:
     """
     Check jobs that should be checked based on their interval
@@ -124,26 +124,15 @@ def check_jobs_by_interval(interval_minutes: int) -> Dict[str, Any]:
         jobs_to_check = db.query(Job).filter(
             and_(
                 Job.is_enabled == True,
-                Job.check_interval == interval_minutes
+                Job.interval == interval_minutes
             )
         ).all()
         
         results = []
         for job in jobs_to_check:
             try:
-                # Check if enough time has passed since last check
-                if job.last_checked:
-                    time_since_last = datetime.utcnow() - job.last_checked
-                    if time_since_last.total_seconds() < (interval_minutes * 60):
-                        # Skip if not enough time has passed
-                        continue
-                
-                # Perform health check
+                # Perform health check (removed last_checked logic since field doesn't exist)
                 result = HealthService.perform_health_check(db, job)
-                
-                # Update last_checked timestamp
-                job.last_checked = datetime.utcnow()
-                db.commit()
                 
                 results.append({
                     'job_id': str(job.id),
