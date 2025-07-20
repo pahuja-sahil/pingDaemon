@@ -1,12 +1,14 @@
 from sqlalchemy import Column, Integer, String, Boolean, DateTime, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
+from uuid import uuid4
 from . import Base
 
 class Job(Base):
     __tablename__ = "jobs"
     
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
     url = Column(String, nullable=False)
     interval = Column(Integer, nullable=False)  # in minutes (1, 5, 10)
     is_enabled = Column(Boolean, default=True)
@@ -16,7 +18,7 @@ class Job(Base):
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     
     # Foreign key to user
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"))
     
     # Relationships
     owner = relationship("User", back_populates="jobs")

@@ -2,6 +2,7 @@
 from pydantic import BaseModel, HttpUrl
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 
 class JobBase(BaseModel):
     url: HttpUrl
@@ -19,9 +20,9 @@ class JobUpdate(BaseModel):
     failure_threshold: Optional[int] = None
 
 class JobResponse(JobBase):
-    id: int
+    id: UUID
     current_status: str
-    user_id: int
+    user_id: UUID
     created_at: datetime
     updated_at: datetime
     
