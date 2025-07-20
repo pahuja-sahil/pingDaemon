@@ -22,12 +22,13 @@ async def create_job(
 
 @router.get("/", response_model=List[JobResponse])
 async def get_user_jobs(
-    skip: int = Query(0, ge=0, description="Number of jobs to skip"),
-    limit: int = Query(100, ge=1, le=100, description="Maximum number of jobs to return"),
+    page: int = Query(1, ge=1, description="Page number (starts from 1)"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
-    """Get all monitoring jobs for the current user"""
+    """Get monitoring jobs for the current user with pagination (10 jobs per page)"""
+    skip = (page - 1) * 10
+    limit = 10
     return JobService.get_user_jobs(db, current_user, skip, limit)
 
 @router.get("/{job_id}", response_model=JobResponse)
