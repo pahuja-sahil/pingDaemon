@@ -7,6 +7,7 @@ from typing import List, Dict, Any
 from ..database import SessionLocal
 from ..models.job import Job
 from ..services.health_service import HealthService
+from ..services.alert_service import AlertService
 
 
 @celery_app.task(bind=True)
@@ -35,6 +36,15 @@ def check_single_job(self, job_id: str) -> Dict[str, Any]:
         
         # Perform health check using existing service
         result = HealthService.perform_health_check(db, job)
+        
+        # Trigger alert if needed
+        if result.get('should_alert', False):
+            alert_result = AlertService.trigger_alert(
+                job_id=job.id,
+                failure_count=job.failure_threshold,
+                error_message=result.get('check_result', {}).get('error_message')
+            )
+            result['alert_triggered'] = alert_result
         
         return {
             'success': True,
@@ -74,6 +84,16 @@ def check_all_active_jobs() -> Dict[str, Any]:
             try:
                 # Perform health check
                 result = HealthService.perform_health_check(db, job)
+                
+                # Trigger alert if needed
+                if result.get('should_alert', False):
+                    alert_result = AlertService.trigger_alert(
+                        job_id=job.id,
+                        failure_count=job.failure_threshold,
+                        error_message=result.get('check_result', {}).get('error_message')
+                    )
+                    result['alert_triggered'] = alert_result
+                
                 results.append({
                     'job_id': str(job.id),
                     'job_url': job.url,
@@ -133,6 +153,15 @@ def check_jobs_by_interval(interval_minutes: int) -> Dict[str, Any]:
             try:
                 # Perform health check (removed last_checked logic since field doesn't exist)
                 result = HealthService.perform_health_check(db, job)
+                
+                # Trigger alert if needed
+                if result.get('should_alert', False):
+                    alert_result = AlertService.trigger_alert(
+                        job_id=job.id,
+                        failure_count=job.failure_threshold,
+                        error_message=result.get('check_result', {}).get('error_message')
+                    )
+                    result['alert_triggered'] = alert_result
                 
                 results.append({
                     'job_id': str(job.id),
