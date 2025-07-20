@@ -1,2 +1,180 @@
-# Periodic URL checker task
-# TODO: Implement in Phase 3 Step 7
+from celery import shared_task
+from sqlalchemy.orm import Session
+from sqlalchemy import and_
+from datetime import datetime, timedelta
+from typing import List, Dict, Any
+
+from ..database import SessionLocal
+from ..models.job import Job
+from ..services.health_service import HealthService
+
+
+@shared_task(bind=True)
+def check_single_job(self, job_id: str) -> Dict[str, Any]:
+    """
+    Check health of a single job
+    
+    Args:
+        job_id: UUID string of the job to check
+    
+    Returns:
+        Dict containing check results
+    """
+    db: Session = SessionLocal()
+    
+    try:
+        # Get job by ID
+        job = db.query(Job).filter(Job.id == job_id).first()
+        
+        if not job:
+            return {
+                'job_id': job_id,
+                'error': 'Job not found',
+                'success': False
+            }
+        
+        # Perform health check using existing service
+        result = HealthService.perform_health_check(db, job)
+        
+        return {
+            'success': True,
+            'task_id': self.request.id,
+            'checked_at': datetime.utcnow().isoformat(),
+            **result
+        }
+        
+    except Exception as e:
+        return {
+            'job_id': job_id,
+            'error': str(e),
+            'success': False,
+            'task_id': self.request.id
+        }
+    
+    finally:
+        db.close()
+
+
+@shared_task
+def check_all_active_jobs() -> Dict[str, Any]:
+    """
+    Check health of all active (enabled) jobs
+    
+    Returns:
+        Dict containing summary of all checks
+    """
+    db: Session = SessionLocal()
+    
+    try:
+        # Get all enabled jobs
+        active_jobs = db.query(Job).filter(Job.is_enabled == True).all()
+        
+        results = []
+        for job in active_jobs:
+            try:
+                # Perform health check
+                result = HealthService.perform_health_check(db, job)
+                results.append({
+                    'job_id': str(job.id),
+                    'job_url': job.url,
+                    'success': True,
+                    **result
+                })
+            except Exception as e:
+                results.append({
+                    'job_id': str(job.id),
+                    'job_url': job.url if job else 'unknown',
+                    'success': False,
+                    'error': str(e)
+                })
+        
+        return {
+            'total_jobs': len(active_jobs),
+            'checked_at': datetime.utcnow().isoformat(),
+            'results': results,
+            'success': True
+        }
+        
+    except Exception as e:
+        return {
+            'error': str(e),
+            'success': False,
+            'checked_at': datetime.utcnow().isoformat()
+        }
+    
+    finally:
+        db.close()
+
+
+@shared_task
+def check_jobs_by_interval(interval_minutes: int) -> Dict[str, Any]:
+    """
+    Check jobs that should be checked based on their interval
+    
+    Args:
+        interval_minutes: Check jobs with this specific interval
+    
+    Returns:
+        Dict containing results of checks
+    """
+    db: Session = SessionLocal()
+    
+    try:
+        # Get jobs with specific interval that are enabled
+        jobs_to_check = db.query(Job).filter(
+            and_(
+                Job.is_enabled == True,
+                Job.check_interval == interval_minutes
+            )
+        ).all()
+        
+        results = []
+        for job in jobs_to_check:
+            try:
+                # Check if enough time has passed since last check
+                if job.last_checked:
+                    time_since_last = datetime.utcnow() - job.last_checked
+                    if time_since_last.total_seconds() < (interval_minutes * 60):
+                        # Skip if not enough time has passed
+                        continue
+                
+                # Perform health check
+                result = HealthService.perform_health_check(db, job)
+                
+                # Update last_checked timestamp
+                job.last_checked = datetime.utcnow()
+                db.commit()
+                
+                results.append({
+                    'job_id': str(job.id),
+                    'job_url': job.url,
+                    'success': True,
+                    **result
+                })
+                
+            except Exception as e:
+                results.append({
+                    'job_id': str(job.id),
+                    'job_url': job.url if job else 'unknown',
+                    'success': False,
+                    'error': str(e)
+                })
+        
+        return {
+            'interval_minutes': interval_minutes,
+            'total_jobs_checked': len(results),
+            'checked_at': datetime.utcnow().isoformat(),
+            'results': results,
+            'success': True
+        }
+        
+    except Exception as e:
+        return {
+            'interval_minutes': interval_minutes,
+            'error': str(e),
+            'success': False,
+            'checked_at': datetime.utcnow().isoformat()
+        }
+    
+    finally:
+        db.close()

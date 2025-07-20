@@ -7,6 +7,7 @@ from ..database import get_db
 from ..models.user import User
 from ..schemas.job import JobCreate, JobUpdate, JobResponse
 from ..services.job_service import JobService
+from ..services.scheduler_service import SchedulerService
 from .auth import get_current_user
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -68,3 +69,50 @@ async def toggle_job_status(
 ):
     """Toggle job enabled/disabled status"""
     return JobService.toggle_job_status(db, job_id, current_user)
+
+@router.post("/{job_id}/check", response_model=dict)
+async def trigger_immediate_health_check(
+    job_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Trigger an immediate health check for a specific job"""
+    # Verify job belongs to user
+    job = JobService.get_job_by_id(db, job_id, current_user)
+    
+    # Schedule immediate check
+    result = SchedulerService.schedule_immediate_check(job_id)
+    return result
+
+@router.post("/{job_id}/check/delayed", response_model=dict)
+async def trigger_delayed_health_check(
+    job_id: UUID,
+    delay_seconds: int = Query(60, ge=1, le=3600, description="Delay in seconds (1-3600)"),
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Schedule a delayed health check for a specific job"""
+    # Verify job belongs to user
+    job = JobService.get_job_by_id(db, job_id, current_user)
+    
+    # Schedule delayed check
+    result = SchedulerService.schedule_delayed_check(job_id, delay_seconds)
+    return result
+
+@router.get("/tasks/{task_id}/status", response_model=dict)
+async def get_task_status(
+    task_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Get the status of a scheduled health check task"""
+    result = SchedulerService.get_task_status(task_id)
+    return result
+
+@router.delete("/tasks/{task_id}", response_model=dict)
+async def cancel_task(
+    task_id: str,
+    current_user: User = Depends(get_current_user)
+):
+    """Cancel a scheduled health check task"""
+    result = SchedulerService.cancel_task(task_id)
+    return result
