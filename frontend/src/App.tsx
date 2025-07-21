@@ -8,6 +8,9 @@ import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
+import Monitors from './pages/Monitors';
+import AddMonitor from './pages/AddMonitor';
+import EditMonitor from './pages/EditMonitor';
 
 // Create a client
 const queryClient = new QueryClient({
@@ -60,6 +63,32 @@ const RouteHandler = () => {
         element={
           <ProtectedRoute>
             <Dashboard />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Monitor Routes */}
+      <Route 
+        path="/monitors" 
+        element={
+          <ProtectedRoute>
+            <Monitors />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/monitors/add" 
+        element={
+          <ProtectedRoute>
+            <AddMonitor />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/monitors/:id/edit" 
+        element={
+          <ProtectedRoute>
+            <EditMonitor />
           </ProtectedRoute>
         } 
       />

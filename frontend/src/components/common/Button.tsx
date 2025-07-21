@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'danger' | 'ghost' | 'outline';
   size?: 'sm' | 'md' | 'lg';
   loading?: boolean;
   children: ReactNode;
@@ -44,6 +44,10 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       ghost: `
         bg-transparent hover:bg-gray-100 text-gray-700 
         focus:ring-gray-500 dark:hover:bg-gray-800 dark:text-gray-300
+      `,
+      outline: `
+        bg-transparent border border-gray-300 hover:bg-gray-50 text-gray-700 
+        focus:ring-gray-500 dark:border-gray-600 dark:hover:bg-gray-800 dark:text-gray-300
       `,
     };
 

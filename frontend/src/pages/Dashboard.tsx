@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Plus, Activity, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -95,7 +96,7 @@ const Dashboard = () => {
               action={{
                 label: 'Add Your First Monitor',
                 onClick: () => {
-                  // TODO: Navigate to add monitor page
+                  window.location.href = '/monitors/add';
                 },
                 variant: 'primary',
               }}
@@ -116,33 +117,37 @@ const Dashboard = () => {
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card hoverable clickable className="p-4 md:p-6">
-              <div className="flex items-center">
-                <Plus className="w-6 h-6 md:w-8 md:h-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-                <div className="ml-3 md:ml-4 min-w-0">
-                  <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
-                    Add Monitor
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Monitor a new website or API endpoint
-                  </p>
+            <Link to="/monitors/add">
+              <Card hoverable clickable className="p-4 md:p-6">
+                <div className="flex items-center">
+                  <Plus className="w-6 h-6 md:w-8 md:h-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                  <div className="ml-3 md:ml-4 min-w-0">
+                    <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
+                      Add Monitor
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Monitor a new website or API endpoint
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </Link>
 
-            <Card hoverable clickable className="p-4 md:p-6">
-              <div className="flex items-center">
-                <Activity className="w-6 h-6 md:w-8 md:h-8 text-purple-600 dark:text-purple-400 flex-shrink-0" />
-                <div className="ml-3 md:ml-4 min-w-0">
-                  <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
-                    View All Monitors
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Manage all your monitoring endpoints
-                  </p>
+            <Link to="/monitors">
+              <Card hoverable clickable className="p-4 md:p-6">
+                <div className="flex items-center">
+                  <Activity className="w-6 h-6 md:w-8 md:h-8 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                  <div className="ml-3 md:ml-4 min-w-0">
+                    <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
+                      View All Monitors
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Manage all your monitoring endpoints
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </Link>
 
             <Card hoverable clickable className="p-4 md:p-6 md:col-span-2 lg:col-span-1">
               <div className="flex items-center">
