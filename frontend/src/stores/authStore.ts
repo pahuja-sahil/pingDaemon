@@ -11,7 +11,7 @@ interface AuthState {
   error: string | null;
   
   // Actions
-  login: (credentials: LoginRequest) => Promise<void>;
+  login: (credentials: LoginRequest, rememberMe?: boolean) => Promise<void>;
   register: (userData: RegisterRequest) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
@@ -28,10 +28,21 @@ export const useAuthStore = create<AuthState>()(
       isLoading: false,
       error: null,
 
-      login: async (credentials: LoginRequest) => {
+      login: async (credentials: LoginRequest, rememberMe = false) => {
         try {
           set({ isLoading: true, error: null });
           const response = await authService.login(credentials);
+          
+          // If rememberMe is false, store token in sessionStorage instead
+          if (!rememberMe) {
+            // Store in sessionStorage (clears on browser close)
+            sessionStorage.setItem('pingdaemon-token', response.access_token);
+            sessionStorage.setItem('pingdaemon-user', JSON.stringify(response.user));
+            
+            // Clear localStorage if it exists
+            localStorage.removeItem('auth-store');
+          }
+          
           set({
             user: response.user,
             token: response.access_token,
@@ -76,6 +87,9 @@ export const useAuthStore = create<AuthState>()(
 
       logout: () => {
         authService.logout();
+        // Clear session storage as well
+        sessionStorage.removeItem('pingdaemon-token');
+        sessionStorage.removeItem('pingdaemon-user');
         set({
           user: null,
           token: null,
@@ -89,8 +103,16 @@ export const useAuthStore = create<AuthState>()(
         try {
           set({ isLoading: true, error: null });
           
-          const storedToken = authService.getToken();
-          const storedUser = authService.getStoredUser();
+          // Check both localStorage (persist) and sessionStorage (remember me = false)
+          let storedToken = authService.getToken();
+          let storedUser = authService.getStoredUser();
+          
+          // If not in localStorage, check sessionStorage
+          if (!storedToken) {
+            storedToken = sessionStorage.getItem('pingdaemon-token');
+            const userStr = sessionStorage.getItem('pingdaemon-user');
+            storedUser = userStr ? JSON.parse(userStr) : null;
+          }
           
           if (!storedToken || !storedUser) {
             set({

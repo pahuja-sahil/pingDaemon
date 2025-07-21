@@ -35,15 +35,23 @@ export const useThemeStore = create<ThemeState>()(
   )
 );
 
-// Helper function to update document theme
+// Helper function to update document theme with smooth transition
 function updateDocumentTheme(isDark: boolean): void {
   const root = document.documentElement;
+  
+  // Add transition class for smooth theme switching
+  root.style.setProperty('transition', 'background-color 0.3s ease, color 0.3s ease');
   
   if (isDark) {
     root.classList.add('dark');
   } else {
     root.classList.remove('dark');
   }
+  
+  // Remove transition after it completes to avoid affecting other animations
+  setTimeout(() => {
+    root.style.removeProperty('transition');
+  }, 300);
 }
 
 // Initialize theme on first load

@@ -113,7 +113,7 @@ const EditMonitor = () => {
       await updateMonitor.mutateAsync({ id, data });
       toast.success('Monitor updated successfully');
       navigate('/monitors');
-    } catch (error) {
+    } catch {
       toast.error('Failed to update monitor');
     }
   };
@@ -125,7 +125,7 @@ const EditMonitor = () => {
       await deleteMonitor.mutateAsync(id);
       toast.success('Monitor deleted successfully');
       navigate('/monitors');
-    } catch (error) {
+    } catch {
       toast.error('Failed to delete monitor');
     } finally {
       setShowDeleteModal(false);
@@ -144,7 +144,7 @@ const EditMonitor = () => {
       // For now, we'll simulate the test
       await new Promise(resolve => setTimeout(resolve, 2000));
       toast.success('URL is accessible');
-    } catch (error) {
+    } catch {
       toast.error('URL test failed');
     } finally {
       setIsTestingUrl(false);

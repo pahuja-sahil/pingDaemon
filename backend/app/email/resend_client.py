@@ -89,3 +89,124 @@ class ResendClient:
                 'error': str(e),
                 'status': 'failed'
             }
+    
+    def send_password_reset_email(
+        self,
+        recipient_email: str,
+        recipient_name: str,
+        reset_token: str,
+        base_url: str = "http://localhost:5173"
+    ) -> Dict[str, Any]:
+        """
+        Send password reset email
+        
+        Args:
+            recipient_email: Email address to send reset link to
+            recipient_name: Name of recipient (email address if no name)
+            reset_token: Password reset token
+            base_url: Frontend base URL for reset link
+            
+        Returns:
+            Dict with send result
+        """
+        reset_url = f"{base_url}/reset-password?token={reset_token}"
+        subject = "Reset Your pingDaemon Password"
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
+        
+        html_content = f"""
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="margin: 0; font-size: 24px;">🔐 Password Reset Request</h1>
+                <p style="margin: 10px 0 0; opacity: 0.9;">pingDaemon Account Security</p>
+            </div>
+            
+            <div style="background: white; padding: 40px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <p style="font-size: 16px; margin: 0 0 20px;">Hello,</p>
+                
+                <p style="margin: 0 0 20px;">We received a request to reset your password for your pingDaemon account associated with <strong>{recipient_email}</strong>.</p>
+                
+                <p style="margin: 0 0 30px;">If you made this request, click the button below to reset your password:</p>
+                
+                <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_url}" 
+                       style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                              color: white; 
+                              padding: 15px 30px; 
+                              text-decoration: none; 
+                              border-radius: 8px; 
+                              font-weight: bold; 
+                              display: inline-block;
+                              box-shadow: 0 3px 10px rgba(102, 126, 234, 0.3);">
+                        Reset My Password
+                    </a>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 30px 0;">
+                    <p style="margin: 0 0 10px; font-weight: bold; color: #495057;">⚠️ Important Security Information:</p>
+                    <ul style="margin: 0; padding-left: 20px; color: #6c757d;">
+                        <li>This link will expire in <strong>1 hour</strong></li>
+                        <li>The link can only be used once</li>
+                        <li>If you didn't request this reset, please ignore this email</li>
+                    </ul>
+                </div>
+                
+                <p style="margin: 20px 0 0; color: #6c757d; font-size: 14px;">
+                    If the button doesn't work, you can copy and paste this link into your browser:<br>
+                    <a href="{reset_url}" style="color: #667eea; word-break: break-all;">{reset_url}</a>
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #e9ecef; margin: 30px 0;">
+                
+                <p style="margin: 0; color: #6c757d; font-size: 12px; text-align: center;">
+                    This email was sent by your pingDaemon monitoring system at {timestamp}<br>
+                    If you didn't request a password reset, please secure your account immediately.
+                </p>
+            </div>
+        </div>
+        """
+        
+        text_content = f"""
+        Password Reset Request - pingDaemon
+        
+        Hello,
+        
+        We received a request to reset your password for your pingDaemon account associated with {recipient_email}.
+        
+        If you made this request, click the link below to reset your password:
+        {reset_url}
+        
+        IMPORTANT SECURITY INFORMATION:
+        - This link will expire in 1 hour
+        - The link can only be used once  
+        - If you didn't request this reset, please ignore this email
+        
+        Time: {timestamp}
+        
+        If you didn't request a password reset, please secure your account immediately.
+        """
+        
+        try:
+            params = {
+                "from": "pingDaemon Security <security@resend.dev>",
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "text": text_content,
+            }
+            
+            email = resend.Emails.send(params)
+            
+            logger.info(f"Password reset email sent successfully to {recipient_email}")
+            return {
+                'success': True,
+                'message_id': email.get('id'),
+                'status': 'sent'
+            }
+                
+        except Exception as e:
+            logger.error(f"Exception sending password reset email: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'status': 'failed'
+            }

@@ -14,6 +14,7 @@ import ThemeToggle from '../components/layout/ThemeToggle';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const { login, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -28,7 +29,7 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await login(data);
+      await login(data, rememberMe);
       toast.success('Welcome back!');
       navigate('/');
     } catch (error) {
@@ -112,6 +113,8 @@ const Login = () => {
                 <label className="flex items-center">
                   <input
                     type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
                     className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:bg-gray-700 dark:border-gray-600"
                   />
                   <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">

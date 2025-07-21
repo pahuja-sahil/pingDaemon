@@ -109,12 +109,7 @@ export const useMonitors = () => {
     deleteMonitor: deleteMonitorMutation,
     toggleMonitor: toggleMonitorMutation,
     checkMonitor: checkMonitorNowMutation,
-    getMonitor: (id: string) => useQuery({
-      queryKey: QUERY_KEYS.monitor(id),
-      queryFn: () => monitorService.getMonitor(id),
-      enabled: !!id,
-      staleTime: 30 * 1000,
-    }),
+    getMonitor: useMonitor,
     
     // Mutation states
     isCreating: createMonitorMutation.isPending,

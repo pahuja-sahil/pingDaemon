@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
+import { useThemeStore } from '../../stores/themeStore';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import BottomNavigation from './BottomNavigation';
@@ -20,6 +21,7 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
   const [isMobile, setIsMobile] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
+  const { isDark } = useThemeStore();
 
   // Check screen size
   useEffect(() => {
@@ -94,7 +96,14 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
       <motion.main
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
+        exit={{ opacity: 0, y: -10 }}
+        transition={{ 
+          duration: 0.4,
+          ease: [0.22, 1, 0.36, 1],
+          type: "spring",
+          stiffness: 300,
+          damping: 30
+        }}
         className={`
           ${showHeader && !isAuthenticated ? 'pt-0' : ''}
           ${isAuthenticated && isMobile ? 'pt-16 pb-20' : ''}
@@ -113,16 +122,22 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
       {/* Toast Notifications */}
       <Toaster
         position="top-right"
+        expand
+        visibleToasts={4}
+        closeButton
         toastOptions={{
           duration: 4000,
           style: {
-            background: 'var(--background)',
-            color: 'var(--foreground)',
-            border: '1px solid var(--border)',
+            background: isDark ? 'rgb(31 41 55)' : 'rgb(255 255 255)',
+            color: isDark ? 'rgb(243 244 246)' : 'rgb(17 24 39)',
+            border: `1px solid ${isDark ? 'rgb(75 85 99)' : 'rgb(229 231 235)'}`,
+            boxShadow: isDark 
+              ? '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)'
+              : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
           },
-          className: 'dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700',
+          className: `${isDark ? 'dark' : ''} font-medium`,
         }}
-        theme="light"
+        theme={isDark ? 'dark' : 'light'}
         richColors
       />
     </div>

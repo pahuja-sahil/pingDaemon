@@ -95,7 +95,7 @@ const AddMonitor = () => {
       await createMonitor.mutateAsync(data);
       toast.success('Monitor created successfully');
       navigate('/monitors');
-    } catch (error) {
+    } catch {
       toast.error('Failed to create monitor');
     }
   };
@@ -112,7 +112,7 @@ const AddMonitor = () => {
       // For now, we'll simulate the test
       await new Promise(resolve => setTimeout(resolve, 2000));
       toast.success('URL is accessible');
-    } catch (error) {
+    } catch {
       toast.error('URL test failed');
     } finally {
       setIsTestingUrl(false);

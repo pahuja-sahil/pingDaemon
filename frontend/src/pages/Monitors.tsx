@@ -19,7 +19,8 @@ import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import EmptyState from '../components/common/EmptyState';
 import MonitorCard from '../components/monitors/MonitorCard';
-import LoadingSpinner from '../components/common/LoadingSpinner';
+import { SkeletonList } from '../components/common/Skeleton';
+import ErrorFallback from '../components/common/ErrorFallback';
 import type { Monitor } from '../types/monitor.types';
 
 type ViewMode = 'grid' | 'list';
@@ -47,30 +48,15 @@ const Monitors = () => {
   const { toast } = useToast();
 
   const handleToggleMonitor = async (id: string) => {
-    try {
-      await toggleMonitor.mutateAsync(id);
-      toast.success('Monitor status updated');
-    } catch (error) {
-      toast.error('Failed to update monitor status');
-    }
+    await toggleMonitor.mutateAsync(id);
   };
 
   const handleDeleteMonitor = async (id: string) => {
-    try {
-      await deleteMonitor.mutateAsync(id);
-      toast.success('Monitor deleted successfully');
-    } catch (error) {
-      toast.error('Failed to delete monitor');
-    }
+    await deleteMonitor.mutateAsync(id);
   };
 
   const handleCheckNow = async (id: string) => {
-    try {
-      await checkMonitor.mutateAsync(id);
-      toast.success('Monitor check initiated');
-    } catch (error) {
-      toast.error('Failed to check monitor');
-    }
+    await checkMonitor.mutateAsync(id);
   };
 
   const handleRefresh = () => {
@@ -134,16 +120,13 @@ const Monitors = () => {
     return (
       <Layout showSidebar={true}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-          <Card className="p-6 md:p-8">
-            <div className="text-center">
-              <p className="text-red-600 dark:text-red-400 mb-4">
-                Failed to load monitors. Please try again.
-              </p>
-              <Button onClick={handleRefresh} variant="primary">
-                Try Again
-              </Button>
-            </div>
-          </Card>
+          <ErrorFallback 
+            error={error} 
+            resetError={() => refetch()}
+            title="Failed to load monitors"
+            description="Unable to fetch your monitors. Please check your connection and try again."
+            showHomeButton={false}
+          />
         </div>
       </Layout>
     );
@@ -349,9 +332,16 @@ const Monitors = () => {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex justify-center py-12"
+            transition={{ duration: 0.3 }}
           >
-            <LoadingSpinner size="lg" />
+            <SkeletonList 
+              items={6} 
+              className={
+                viewMode === 'grid'
+                  ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
+                  : 'space-y-4'
+              }
+            />
           </motion.div>
         )}
 

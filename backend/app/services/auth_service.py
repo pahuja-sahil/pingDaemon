@@ -4,11 +4,14 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
+import secrets
+import string
 
 from ..models.user import User
 from ..schemas.user import UserCreate
 from ..utils.security import hash_password, verify_password, create_access_token
 from ..config import settings
+from ..email.resend_client import ResendClient
 
 class AuthService:
     
@@ -88,3 +91,73 @@ class AuthService:
                 headers={"WWW-Authenticate": "Bearer"},
             )
         return user
+    
+    @staticmethod
+    def generate_reset_token() -> str:
+        """Generate a secure random token for password reset"""
+        return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(32))
+    
+    @staticmethod
+    def request_password_reset(db: Session, email: str) -> bool:
+        """Generate password reset token for user"""
+        user = db.query(User).filter(User.email == email).first()
+        if not user:
+            # For security, don't reveal if email exists or not
+            return True
+        
+        # Generate reset token and set expiry (1 hour from now)
+        reset_token = AuthService.generate_reset_token()
+        reset_expires = datetime.utcnow() + timedelta(hours=1)
+        
+        # Update user with reset token
+        user.reset_token = reset_token
+        user.reset_token_expires = reset_expires
+        db.commit()
+        
+        # Send password reset email
+        try:
+            email_client = ResendClient()
+            result = email_client.send_password_reset_email(
+                recipient_email=email,
+                recipient_name=email,  # Using email as name for now
+                reset_token=reset_token
+            )
+            
+            if not result.get('success'):
+                print(f"Failed to send password reset email: {result.get('error')}")
+                # Still return True for security - don't reveal email send failures
+                
+        except Exception as e:
+            print(f"Exception sending password reset email: {str(e)}")
+            # For development, also print the token to console as fallback
+            print(f"Password reset token for {email}: {reset_token}")
+        
+        return True
+    
+    @staticmethod
+    def verify_reset_token(db: Session, token: str) -> Optional[User]:
+        """Verify reset token and return user if valid"""
+        user = db.query(User).filter(
+            User.reset_token == token,
+            User.reset_token_expires > datetime.utcnow()
+        ).first()
+        
+        return user
+    
+    @staticmethod
+    def reset_password(db: Session, token: str, new_password: str) -> bool:
+        """Reset user password using token"""
+        user = AuthService.verify_reset_token(db, token)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid or expired reset token"
+            )
+        
+        # Update password and clear reset token
+        user.hashed_password = hash_password(new_password)
+        user.reset_token = None
+        user.reset_token_expires = None
+        db.commit()
+        
+        return True

@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..schemas.user import UserCreate, UserResponse, UserLogin
+from ..schemas.user import UserCreate, UserResponse, UserLogin, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse
 from ..services.auth_service import AuthService
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
@@ -69,3 +69,53 @@ async def get_current_user(
 ):
     """Dependency to get current authenticated user"""
     return AuthService.get_current_user(db, token)
+
+@router.post("/forgot-password", response_model=PasswordResetResponse)
+async def forgot_password(
+    request: ForgotPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    """Request password reset email"""
+    try:
+        AuthService.request_password_reset(db, request.email)
+        return PasswordResetResponse(
+            message="If an account with that email exists, password reset instructions have been sent."
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to process password reset request"
+        )
+
+@router.post("/verify-reset-token")
+async def verify_reset_token(
+    token: str,
+    db: Session = Depends(get_db)
+):
+    """Verify if reset token is valid"""
+    user = AuthService.verify_reset_token(db, token)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token"
+        )
+    return {"message": "Token is valid"}
+
+@router.post("/reset-password", response_model=PasswordResetResponse)
+async def reset_password(
+    request: ResetPasswordRequest,
+    db: Session = Depends(get_db)
+):
+    """Reset password using token"""
+    try:
+        AuthService.reset_password(db, request.token, request.password)
+        return PasswordResetResponse(
+            message="Password has been successfully reset"
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Failed to reset password"
+        )

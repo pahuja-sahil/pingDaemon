@@ -24,8 +24,8 @@ export const useAuth = () => {
     }
   }, [isAuthenticated, isLoading, checkAuth]);
 
-  const handleLogin = async (credentials: LoginRequest) => {
-    await login(credentials);
+  const handleLogin = async (credentials: LoginRequest, rememberMe?: boolean) => {
+    await login(credentials, rememberMe);
   };
 
   const handleRegister = async (userData: RegisterRequest) => {
