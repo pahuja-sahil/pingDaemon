@@ -20,9 +20,8 @@ class Settings:
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 30
     
-    # Mailjet configuration
-    MAILJET_API_KEY: Optional[str] = os.getenv("MAILJET_API_KEY")
-    MAILJET_API_SECRET: Optional[str] = os.getenv("MAILJET_API_SECRET")
+    # Resend configuration
+    RESEND_API_KEY: Optional[str] = os.getenv("RESEND_API_KEY")
     
     # App configuration
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"

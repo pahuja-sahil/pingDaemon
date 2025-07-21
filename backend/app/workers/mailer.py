@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from uuid import UUID
 
 from ..database import get_db
-from ..email.mailjet_client import MailjetClient
+from ..email.resend_client import ResendClient
 from ..models.job import Job
 from ..models.user import User
 from ..models.alert import Alert
@@ -56,9 +56,9 @@ def send_alert_email(self, job_id: str, failure_count: int, error_message: str =
         db.add(alert)
         db.commit()
         
-        # Send email using Mailjet
-        mailjet_client = MailjetClient()
-        result = mailjet_client.send_alert_email(
+        # Send email using Resend
+        resend_client = ResendClient()
+        result = resend_client.send_alert_email(
             recipient_email=user.email,
             recipient_name=user.email,  # Using email as name for now
             job_url=job.url,
