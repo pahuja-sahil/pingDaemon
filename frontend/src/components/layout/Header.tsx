@@ -18,7 +18,7 @@ const Header = () => {
   const handleLogout = () => {
     logout();
     toast.success('Logged out successfully');
-    navigate('/login');
+    navigate('/', { replace: true });
   };
 
   const navigation = [
@@ -107,7 +107,7 @@ const Header = () => {
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: -10 }}
                         transition={{ duration: 0.2 }}
-                        className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 border dark:border-gray-700"
+                        className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 border dark:border-gray-700 z-20"
                       >
                         <div className="py-1">
                           <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">

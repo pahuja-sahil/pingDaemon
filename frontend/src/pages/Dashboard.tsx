@@ -1,3 +1,4 @@
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Plus, Activity, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
@@ -8,20 +9,41 @@ import Layout from '../components/layout/Layout';
 const Dashboard = () => {
   const { user } = useAuth();
 
+  const StatCard = ({ icon: Icon, title, value, color }: {
+    icon: React.ElementType;
+    title: string;
+    value: string | number;
+    color: string;
+  }) => (
+    <Card hoverable className="p-4 md:p-6">
+      <div className="flex items-center">
+        <div className={`w-10 h-10 md:w-12 md:h-12 ${color} rounded-lg flex items-center justify-center flex-shrink-0`}>
+          <Icon className="w-5 h-5 md:w-6 md:h-6" />
+        </div>
+        <div className="ml-3 md:ml-4 min-w-0">
+          <p className="text-xs md:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
+            {title}
+          </p>
+          <p className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{value}</p>
+        </div>
+      </div>
+    </Card>
+  );
+
   return (
-    <Layout>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <Layout showSidebar={true}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
-          className="mb-8"
+          className="mb-6 md:mb-8"
         >
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 dark:text-white">
             Welcome back, {user?.email?.split('@')[0]}! 👋
           </h1>
-          <p className="text-gray-600 dark:text-gray-400 mt-2">
+          <p className="text-gray-600 dark:text-gray-400 mt-1 md:mt-2 text-sm md:text-base">
             Here's an overview of your website monitoring
           </p>
         </motion.div>
@@ -31,63 +53,32 @@ const Dashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+          className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8"
         >
-          <Card hoverable className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/20 rounded-lg flex items-center justify-center">
-                <Activity className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Total Monitors
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card hoverable className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-green-100 dark:bg-green-900/20 rounded-lg flex items-center justify-center">
-                <CheckCircle className="w-6 h-6 text-green-600 dark:text-green-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Healthy
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card hoverable className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-red-100 dark:bg-red-900/20 rounded-lg flex items-center justify-center">
-                <AlertTriangle className="w-6 h-6 text-red-600 dark:text-red-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Issues
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">0</p>
-              </div>
-            </div>
-          </Card>
-
-          <Card hoverable className="p-6">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg flex items-center justify-center">
-                <Clock className="w-6 h-6 text-yellow-600 dark:text-yellow-400" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
-                  Avg Response
-                </p>
-                <p className="text-2xl font-bold text-gray-900 dark:text-white">--</p>
-              </div>
-            </div>
-          </Card>
+          <StatCard
+            icon={Activity}
+            title="Total Monitors"
+            value={0}
+            color="bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
+          />
+          <StatCard
+            icon={CheckCircle}
+            title="Healthy"
+            value={0}
+            color="bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
+          />
+          <StatCard
+            icon={AlertTriangle}
+            title="Issues"
+            value={0}
+            color="bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
+          />
+          <StatCard
+            icon={Clock}
+            title="Avg Response"
+            value="--"
+            color="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400"
+          />
         </motion.div>
 
         {/* Empty State */}
@@ -96,7 +87,7 @@ const Dashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <Card className="p-8">
+          <Card className="p-6 md:p-8">
             <EmptyState
               icon={<Activity className="w-full h-full" />}
               title="No monitors yet"
@@ -117,50 +108,50 @@ const Dashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.3 }}
-          className="mt-8"
+          className="mt-6 md:mt-8"
         >
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
+            <h2 className="text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
               Quick Actions
             </h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <Card hoverable clickable className="p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Card hoverable clickable className="p-4 md:p-6">
               <div className="flex items-center">
-                <Plus className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <Plus className="w-6 h-6 md:w-8 md:h-8 text-blue-600 dark:text-blue-400 flex-shrink-0" />
+                <div className="ml-3 md:ml-4 min-w-0">
+                  <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
                     Add Monitor
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     Monitor a new website or API endpoint
                   </p>
                 </div>
               </div>
             </Card>
 
-            <Card hoverable clickable className="p-6">
+            <Card hoverable clickable className="p-4 md:p-6">
               <div className="flex items-center">
-                <Activity className="w-8 h-8 text-purple-600 dark:text-purple-400" />
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <Activity className="w-6 h-6 md:w-8 md:h-8 text-purple-600 dark:text-purple-400 flex-shrink-0" />
+                <div className="ml-3 md:ml-4 min-w-0">
+                  <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
                     View All Monitors
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     Manage all your monitoring endpoints
                   </p>
                 </div>
               </div>
             </Card>
 
-            <Card hoverable clickable className="p-6">
+            <Card hoverable clickable className="p-4 md:p-6 md:col-span-2 lg:col-span-1">
               <div className="flex items-center">
-                <CheckCircle className="w-8 h-8 text-green-600 dark:text-green-400" />
-                <div className="ml-4">
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white">
+                <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600 dark:text-green-400 flex-shrink-0" />
+                <div className="ml-3 md:ml-4 min-w-0">
+                  <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
                     View Reports
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-400">
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
                     Check uptime and performance reports
                   </p>
                 </div>
