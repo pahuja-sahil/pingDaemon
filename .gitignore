@@ -62,3 +62,6 @@ logs/
 # Learning Notes & Project Tracking (keep local only)
 learning-notes.txt
 implementation-checklist.md
+
+#testing file
+test_resend.py

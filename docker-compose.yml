@@ -46,8 +46,7 @@ services:
       REDIS_URL: ${REDIS_URL}
       SECRET_KEY: ${SECRET_KEY}
       DEBUG: ${DEBUG}
-      MAILJET_API_KEY: ${MAILJET_API_KEY}
-      MAILJET_API_SECRET: ${MAILJET_API_SECRET}
+      RESEND_API_KEY: ${RESEND_API_KEY}
     ports:
       - "8000:8000"
     depends_on:
