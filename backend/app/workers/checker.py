@@ -37,14 +37,8 @@ def check_single_job(self, job_id: str) -> Dict[str, Any]:
         # Perform health check using existing service
         result = HealthService.perform_health_check(db, job)
         
-        # Trigger alert if needed
-        if result.get('should_alert', False):
-            alert_result = AlertService.trigger_alert(
-                job_id=job.id,
-                failure_count=job.failure_threshold,
-                error_message=result.get('check_result', {}).get('error_message')
-            )
-            result['alert_triggered'] = alert_result
+        # Alert is already handled in health service via email queue
+        # result['alert_triggered'] is set by health service if needed
         
         return {
             'success': True,
@@ -85,14 +79,8 @@ def check_all_active_jobs() -> Dict[str, Any]:
                 # Perform health check
                 result = HealthService.perform_health_check(db, job)
                 
-                # Trigger alert if needed
-                if result.get('should_alert', False):
-                    alert_result = AlertService.trigger_alert(
-                        job_id=job.id,
-                        failure_count=job.failure_threshold,
-                        error_message=result.get('check_result', {}).get('error_message')
-                    )
-                    result['alert_triggered'] = alert_result
+                # Alert is already handled in health service via email queue
+                # result['alert_triggered'] is set by health service if needed
                 
                 results.append({
                     'job_id': str(job.id),
@@ -154,14 +142,8 @@ def check_jobs_by_interval(interval_minutes: int) -> Dict[str, Any]:
                 # Perform health check (removed last_checked logic since field doesn't exist)
                 result = HealthService.perform_health_check(db, job)
                 
-                # Trigger alert if needed
-                if result.get('should_alert', False):
-                    alert_result = AlertService.trigger_alert(
-                        job_id=job.id,
-                        failure_count=job.failure_threshold,
-                        error_message=result.get('check_result', {}).get('error_message')
-                    )
-                    result['alert_triggered'] = alert_result
+                # Alert is already handled in health service via email queue
+                # result['alert_triggered'] is set by health service if needed
                 
                 results.append({
                     'job_id': str(job.id),
