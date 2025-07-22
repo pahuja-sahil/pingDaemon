@@ -13,7 +13,6 @@ import Button from '../components/common/Button';
 import LoadingSpinner from '../components/common/LoadingSpinner';
 
 const monitorSchema = z.object({
-  name: z.string().min(1, 'Monitor name is required').max(255, 'Name is too long'),
   url: z.string()
     .url('Please enter a valid URL')
     .refine((url) => {
@@ -25,40 +24,22 @@ const monitorSchema = z.object({
       }
     }, 'URL must use HTTP or HTTPS protocol'),
   interval: z.number()
-    .min(60, 'Minimum interval is 1 minute (60 seconds)')
-    .max(86400, 'Maximum interval is 24 hours (86400 seconds)'),
+    .refine((val) => [5, 10, 15, 30, 60].includes(val), 
+      'Interval must be 5, 10, 15, 30, or 60 minutes'),
   failure_threshold: z.number()
     .min(1, 'Minimum threshold is 1 failure')
     .max(10, 'Maximum threshold is 10 failures'),
-  timeout: z.number()
-    .min(5, 'Minimum timeout is 5 seconds')
-    .max(300, 'Maximum timeout is 300 seconds'),
-  expected_status_code: z.number()
-    .min(100, 'Status code must be between 100-599')
-    .max(599, 'Status code must be between 100-599')
-    .optional(),
-  expected_response_time: z.number()
-    .min(1, 'Expected response time must be at least 1ms')
-    .max(30000, 'Expected response time cannot exceed 30 seconds')
-    .optional(),
-  notification_enabled: z.boolean(),
   is_enabled: z.boolean(),
 });
 
 type MonitorFormData = z.infer<typeof monitorSchema>;
 
 const intervalOptions = [
-  { value: 60, label: '1 minute' },
-  { value: 300, label: '5 minutes' },
-  { value: 600, label: '10 minutes' },
-  { value: 900, label: '15 minutes' },
-  { value: 1800, label: '30 minutes' },
-  { value: 3600, label: '1 hour' },
-  { value: 7200, label: '2 hours' },
-  { value: 14400, label: '4 hours' },
-  { value: 21600, label: '6 hours' },
-  { value: 43200, label: '12 hours' },
-  { value: 86400, label: '24 hours' },
+  { value: 5, label: '5 minutes' },
+  { value: 10, label: '10 minutes' },
+  { value: 15, label: '15 minutes' },
+  { value: 30, label: '30 minutes' },
+  { value: 60, label: '60 minutes' },
 ];
 
 const AddMonitor = () => {

@@ -99,9 +99,19 @@ class JobService:
     
     @staticmethod
     def delete_job(db: Session, job_id: UUID, user: User) -> bool:
-        """Delete a job"""
+        """Delete a job and all related records"""
+        from ..models.log import HealthLog
+        from ..models.alert import Alert
+        
         job = JobService.get_job_by_id(db, job_id, user)
         
+        # Delete related health logs first
+        db.query(HealthLog).filter(HealthLog.job_id == job_id).delete()
+        
+        # Delete related alerts
+        db.query(Alert).filter(Alert.job_id == job_id).delete()
+        
+        # Now delete the job
         db.delete(job)
         db.commit()
         return True

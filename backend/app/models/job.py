@@ -22,4 +22,5 @@ class Job(Base):
     
     # Relationships
     owner = relationship("User", back_populates="jobs")
-    health_logs = relationship("HealthLog", back_populates="job")
+    health_logs = relationship("HealthLog", back_populates="job", cascade="all, delete-orphan")
+    alerts = relationship("Alert", cascade="all, delete-orphan")

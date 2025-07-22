@@ -1,5 +1,6 @@
 from sqlalchemy import Column, String, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from uuid import uuid4
 from . import Base
@@ -18,3 +19,6 @@ class Alert(Base):
     
     # Foreign key to monitoring job
     job_id = Column(UUID(as_uuid=True), ForeignKey("jobs.id"))
+    
+    # Relationship
+    job = relationship("Job", back_populates="alerts")

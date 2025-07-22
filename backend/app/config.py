@@ -9,7 +9,7 @@ class Settings:
     # Database configuration
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
-        "postgresql://postgres:password@localhost:5432/pingdaemon"
+        "postgresql://pingAdmin:Shockingstar15@postgres:5432/pingDaemon"
     )
     
     # Redis configuration for Celery
