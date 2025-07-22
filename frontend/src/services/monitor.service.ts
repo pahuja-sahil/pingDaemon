@@ -1,5 +1,5 @@
 import api from './api';
-import type { Monitor, CreateMonitorRequest, UpdateMonitorRequest, CheckTaskResponse } from '../types/monitor.types';
+import type { Monitor, CreateMonitorRequest, UpdateMonitorRequest, CheckTaskResponse, TaskStatus, HealthCheckResult } from '../types/monitor.types';
 
 class MonitorService {
   async getMonitors(): Promise<Monitor[]> {
@@ -62,6 +62,29 @@ class MonitorService {
     return monitors.filter(monitor => 
       monitor.url.toLowerCase().includes(query.toLowerCase())
     );
+  }
+
+  async getTaskStatus(taskId: string): Promise<TaskStatus> {
+    const response = await api.get<TaskStatus>(`/tasks/${taskId}/status`);
+    return response.data;
+  }
+
+  async performImmediateHealthCheck(id: string): Promise<HealthCheckResult> {
+    // Use the new direct health check endpoint
+    const response = await api.post(`/jobs/${id}/check-now`);
+    
+    if (!response.data.success) {
+      throw new Error('Health check failed');
+    }
+    
+    // Extract health check result from the direct response
+    const healthCheck = response.data.health_check;
+    return {
+      is_healthy: healthCheck.is_healthy,
+      status_code: healthCheck.status_code,
+      response_time: healthCheck.response_time,
+      error_message: healthCheck.error_message
+    };
   }
 }
 

@@ -1,8 +1,8 @@
 import { motion } from 'framer-motion';
-import { CheckCircle, XCircle, AlertTriangle, HelpCircle } from 'lucide-react';
+import { CheckCircle, XCircle, HelpCircle } from 'lucide-react';
 
 interface StatusBadgeProps {
-  status: 'healthy' | 'unhealthy' | 'unknown' | 'degraded';
+  status: 'healthy' | 'unhealthy' | 'unknown';
   showPulse?: boolean;
   size?: 'sm' | 'md' | 'lg';
 }
@@ -24,14 +24,6 @@ const StatusBadge = ({ status, showPulse = true, size = 'md' }: StatusBadgeProps
       bgColor: 'bg-red-100 dark:bg-red-900/20',
       borderColor: 'border-red-200 dark:border-red-800',
       pulseColor: 'bg-red-400',
-    },
-    degraded: {
-      label: 'Degraded',
-      icon: AlertTriangle,
-      color: 'text-yellow-600 dark:text-yellow-400',
-      bgColor: 'bg-yellow-100 dark:bg-yellow-900/20',
-      borderColor: 'border-yellow-200 dark:border-yellow-800',
-      pulseColor: 'bg-yellow-400',
     },
     unknown: {
       label: 'Unknown',

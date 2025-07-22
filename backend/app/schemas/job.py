@@ -37,9 +37,17 @@ class JobUpdate(BaseModel):
 class JobResponse(JobBase):
     id: UUID
     current_status: str
+    previous_status: str
     user_id: UUID
     created_at: datetime
     updated_at: datetime
+    
+    @validator('current_status', 'previous_status')
+    def validate_status(cls, v):
+        allowed_statuses = ['healthy', 'unhealthy', 'unknown']
+        if v not in allowed_statuses:
+            raise ValueError(f'Status must be one of {allowed_statuses}')
+        return v
     
     class Config:
         from_attributes = True

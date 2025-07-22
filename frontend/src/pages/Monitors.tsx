@@ -26,7 +26,7 @@ import type { Monitor } from '../types/monitor.types';
 type ViewMode = 'grid' | 'list';
 type SortBy = 'name' | 'status' | 'created_at' | 'updated_at';
 type SortOrder = 'asc' | 'desc';
-type FilterStatus = 'all' | 'enabled' | 'disabled' | 'healthy' | 'unhealthy' | 'degraded' | 'unknown';
+type FilterStatus = 'all' | 'enabled' | 'disabled' | 'healthy' | 'unhealthy' | 'unknown';
 
 const Monitors = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -43,7 +43,7 @@ const Monitors = () => {
     refetch, 
     toggleMonitor, 
     deleteMonitor, 
-    checkMonitor 
+    immediateHealthCheck
   } = useMonitors();
   const { toast } = useToast();
   
@@ -69,12 +69,7 @@ const Monitors = () => {
   };
 
   const handleCheckNow = async (id: string) => {
-    setLoadingMonitorId(id);
-    try {
-      await checkMonitor.mutateAsync(id);
-    } finally {
-      setLoadingMonitorId(null);
-    }
+    return await immediateHealthCheck(id);
   };
 
   const handleRefresh = () => {
@@ -97,7 +92,7 @@ const Monitors = () => {
       if (filterStatus !== 'all') {
         if (filterStatus === 'enabled' && !monitor.is_enabled) return false;
         if (filterStatus === 'disabled' && monitor.is_enabled) return false;
-        if (['healthy', 'unhealthy', 'degraded', 'unknown'].includes(filterStatus) && 
+        if (['healthy', 'unhealthy', 'unknown'].includes(filterStatus) && 
             monitor.current_status !== filterStatus) return false;
       }
 
@@ -285,7 +280,6 @@ const Monitors = () => {
                           <option value="disabled">Disabled</option>
                           <option value="healthy">Healthy</option>
                           <option value="unhealthy">Unhealthy</option>
-                          <option value="degraded">Degraded</option>
                           <option value="unknown">Unknown</option>
                         </select>
                       </div>

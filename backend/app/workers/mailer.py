@@ -1,6 +1,5 @@
 import logging
 from datetime import datetime
-from celery import Celery
 from sqlalchemy.orm import Session
 from uuid import UUID
 
@@ -9,16 +8,11 @@ from ..email.resend_client import ResendClient
 from ..models.job import Job
 from ..models.user import User
 from ..models.alert import Alert
-from ..config import settings
 
 logger = logging.getLogger(__name__)
 
-# Create Celery instance
-celery_app = Celery(
-    "mailer",
-    broker=settings.REDIS_URL,
-    backend=settings.REDIS_URL
-)
+# Import the main Celery app instance
+from ..celery_worker import celery_app
 
 @celery_app.task(bind=True, retry_backoff=True, max_retries=3)
 def send_alert_email(self, job_id: str, failure_count: int, error_message: str = None):
@@ -72,9 +66,11 @@ def send_alert_email(self, job_id: str, failure_count: int, error_message: str =
             alert.sent_at = datetime.utcnow()
             logger.info(f"Alert email sent successfully for job {job_id}")
         else:
-            logger.error(f"Failed to send alert email for job {job_id}: {result['error']}")
+            error_msg = result.get('error', 'Unknown error')
+            logger.error(f"Failed to send alert email for job {job_id}: {error_msg}")
+            logger.error(f"Full result: {result}")
             # Retry the task if it failed
-            raise self.retry(countdown=60)
+            raise self.retry(countdown=60, exc=Exception(f"Email send failed: {error_msg}"))
         
         db.commit()
         

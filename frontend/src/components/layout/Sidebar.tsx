@@ -67,7 +67,7 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
 
   const isActivePath = (path: string) => {
     if (path === '/' && location.pathname === '/') return true;
-    if (path !== '/' && location.pathname.startsWith(path)) return true;
+    if (path !== '/' && location.pathname === path) return true;
     return false;
   };
 

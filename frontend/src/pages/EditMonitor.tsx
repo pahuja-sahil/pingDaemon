@@ -46,7 +46,7 @@ const intervalOptions = [
 const EditMonitor = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { getMonitor, updateMonitor, deleteMonitor } = useMonitors();
+  const { getMonitor, updateMonitor, deleteMonitor, immediateHealthCheck } = useMonitors();
   const { toast } = useToast();
   const [isTestingUrl, setIsTestingUrl] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -61,7 +61,6 @@ const EditMonitor = () => {
     register,
     handleSubmit,
     watch,
-    setValue,
     reset,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<MonitorFormData>({
@@ -87,7 +86,17 @@ const EditMonitor = () => {
     
     try {
       await updateMonitor.mutateAsync({ id, data });
-      toast.success('Monitor updated successfully');
+      
+      // Auto-trigger health check after successful update
+      try {
+        await immediateHealthCheck(id);
+        toast.success('Monitor updated and health check completed');
+      } catch (error) {
+        // Don't fail the entire operation if health check fails
+        console.error('Health check failed:', error);
+        toast.info('Monitor updated, but health check failed');
+      }
+      
       navigate('/monitors');
     } catch {
       toast.error('Failed to update monitor');
@@ -127,9 +136,6 @@ const EditMonitor = () => {
     }
   };
 
-  const handleUrlChange = (url: string) => {
-    setValue('url', url);
-  };
 
   // Loading state
   if (isLoadingMonitor) {
@@ -231,7 +237,6 @@ const EditMonitor = () => {
                           {...register('url')}
                           type="url"
                           placeholder="https://example.com"
-                          onChange={(e) => handleUrlChange(e.target.value)}
                           className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                             errors.url ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
                           }`}

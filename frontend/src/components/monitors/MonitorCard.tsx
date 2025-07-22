@@ -12,25 +12,30 @@ import {
   Globe,
   Calendar
 } from 'lucide-react';
-import type { Monitor } from '../../types/monitor.types';
+import type { Monitor, HealthCheckResult } from '../../types/monitor.types';
 import { formatRelativeTime, getDomainFromUrl } from '../../utils/formatters';
 import Card from '../common/Card';
 import Button from '../common/Button';
 import StatusBadge from './StatusBadge';
 import IntervalBadge from './IntervalBadge';
 import Modal from '../common/Modal';
+import HealthCheckModal from './HealthCheckModal';
 
 interface MonitorCardProps {
   monitor: Monitor;
   onToggle: (id: string) => void;
   onDelete: (id: string) => void;
-  onCheckNow: (id: string) => void;
+  onCheckNow: (id: string) => Promise<HealthCheckResult>;
   isLoading?: boolean;
 }
 
 const MonitorCard = ({ monitor, onToggle, onDelete, onCheckNow, isLoading }: MonitorCardProps) => {
   const [showActions, setShowActions] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showHealthCheckModal, setShowHealthCheckModal] = useState(false);
+  const [healthCheckResult, setHealthCheckResult] = useState<HealthCheckResult | undefined>();
+  const [healthCheckLoading, setHealthCheckLoading] = useState(false);
+  const [healthCheckError, setHealthCheckError] = useState<string | undefined>();
 
   const handleDelete = () => {
     onDelete(monitor.id);
@@ -41,8 +46,21 @@ const MonitorCard = ({ monitor, onToggle, onDelete, onCheckNow, isLoading }: Mon
     onToggle(monitor.id);
   };
 
-  const handleCheckNow = () => {
-    onCheckNow(monitor.id);
+  const handleCheckNow = async () => {
+    setHealthCheckLoading(true);
+    setHealthCheckError(undefined);
+    setHealthCheckResult(undefined);
+    setShowHealthCheckModal(true);
+    setShowActions(false);
+    
+    try {
+      const result = await onCheckNow(monitor.id);
+      setHealthCheckResult(result);
+    } catch (error) {
+      setHealthCheckError(error instanceof Error ? error.message : 'Health check failed');
+    } finally {
+      setHealthCheckLoading(false);
+    }
   };
 
   return (
@@ -131,10 +149,7 @@ const MonitorCard = ({ monitor, onToggle, onDelete, onCheckNow, isLoading }: Mon
                       </button>
                       
                       <button
-                        onClick={() => {
-                          handleCheckNow();
-                          setShowActions(false);
-                        }}
+                        onClick={handleCheckNow}
                         className="flex items-center gap-3 w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                         disabled={!monitor.is_enabled}
                       >
@@ -239,6 +254,16 @@ const MonitorCard = ({ monitor, onToggle, onDelete, onCheckNow, isLoading }: Mon
           </div>
         </div>
       </Modal>
+
+      {/* Health Check Results Modal */}
+      <HealthCheckModal
+        isOpen={showHealthCheckModal}
+        onClose={() => setShowHealthCheckModal(false)}
+        url={monitor.url}
+        result={healthCheckResult}
+        isLoading={healthCheckLoading}
+        error={healthCheckError}
+      />
     </>
   );
 };

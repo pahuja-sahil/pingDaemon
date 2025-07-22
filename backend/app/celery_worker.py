@@ -9,7 +9,8 @@ celery_app = Celery(
     backend=settings.REDIS_URL,
     include=[
         "app.workers.checker",
-        "app.workers.mailer"
+        "app.workers.mailer",
+        "app.workers.email_batch"
     ]
 )
 
@@ -53,5 +54,11 @@ celery_app.conf.beat_schedule = {
         'task': 'app.workers.checker.check_jobs_by_interval',
         'schedule': 3600.0,  # 60 minutes in seconds
         'args': (60,)
+    },
+    # Process email queue every 2 seconds (respects rate limit)
+    'process-email-batch': {
+        'task': 'app.workers.email_batch.process_email_batch',
+        'schedule': 2.0,  # Every 2 seconds to send max 2 emails per second
+        'args': (2,)  # Batch size of 2 emails
     },
 }

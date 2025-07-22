@@ -84,9 +84,13 @@ class ResendClient:
                 
         except Exception as e:
             logger.error(f"Exception sending email: {str(e)}")
+            logger.error(f"Exception type: {type(e).__name__}")
+            # Also log the full params for debugging
+            logger.debug(f"Email params were: {params}")
             return {
                 'success': False,
-                'error': str(e),
+                'error': str(e) if str(e) else f"{type(e).__name__}: Unknown error",
+                'error_type': type(e).__name__,
                 'status': 'failed'
             }
     

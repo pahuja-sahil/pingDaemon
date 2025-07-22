@@ -1,5 +1,6 @@
 import requests
 import time
+import logging
 from datetime import datetime
 from sqlalchemy.orm import Session
 from typing import Dict, Any
@@ -7,6 +8,10 @@ from uuid import UUID
 
 from ..models.job import Job
 from ..models.log import HealthLog
+from ..models.user import User
+from .email_queue_service import EmailQueueService
+
+logger = logging.getLogger(__name__)
 
 class HealthService:
     
@@ -114,6 +119,9 @@ class HealthService:
     @staticmethod
     def update_job_status(db: Session, job: Job, is_healthy: bool) -> Job:
         """Update job current status based on health check"""
+        # Store previous status for status change detection
+        job.previous_status = job.current_status
+        
         if is_healthy:
             job.current_status = "healthy"
         else:
@@ -121,7 +129,8 @@ class HealthService:
             if HealthService.check_failure_threshold(db, job):
                 job.current_status = "unhealthy"
             else:
-                job.current_status = "degraded"  # Some failures but not threshold
+                # Simplified: no degraded status, go straight to unhealthy on first failure
+                job.current_status = "unhealthy"
         
         db.commit()
         db.refresh(job)
@@ -143,16 +152,43 @@ class HealthService:
                 'reason': 'Job is disabled'
             }
         
+        # Store current status before update
+        previous_status = job.current_status
+        
         # Perform health check
         check_result = HealthService.check_url_health(job.url)
         
         # Log the result
         health_log = HealthService.log_health_check(db, job.id, check_result)
         
-        # Update job status
+        # Update job status (this also sets previous_status in the job)
         updated_job = HealthService.update_job_status(db, job, check_result['is_healthy'])
         
-        # Check if alert should be triggered
+        # Check for status change and queue email if needed
+        alert_triggered = None
+        if previous_status != updated_job.current_status:
+            try:
+                # Get job owner
+                user = db.query(User).filter(User.id == job.user_id).first()
+                if user:
+                    # Queue status change email
+                    email_queue = EmailQueueService.queue_status_change_alert(
+                        db=db,
+                        job=updated_job,
+                        user=user,
+                        previous_status=previous_status,
+                        current_status=updated_job.current_status,
+                        error_message=check_result.get('error_message')
+                    )
+                    alert_triggered = {
+                        'email_queue_id': email_queue.id,
+                        'status_change': f"{previous_status} → {updated_job.current_status}"
+                    }
+            except Exception as e:
+                logger.error(f"Failed to queue status change alert: {str(e)}")
+                alert_triggered = {'error': str(e)}
+        
+        # Check if alert should be triggered (legacy compatibility)
         should_alert = (
             not check_result['is_healthy'] and 
             HealthService.check_failure_threshold(db, job)
@@ -163,7 +199,9 @@ class HealthService:
             'job_url': job.url,
             'check_result': check_result,
             'current_status': updated_job.current_status,
+            'previous_status': previous_status,
             'should_alert': should_alert,
             'health_log_id': health_log.id,
-            'skipped': False
+            'skipped': False,
+            'alert_triggered': alert_triggered
         }

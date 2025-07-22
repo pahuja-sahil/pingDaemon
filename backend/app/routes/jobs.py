@@ -8,6 +8,7 @@ from ..models.user import User
 from ..schemas.job import JobCreate, JobUpdate, JobResponse
 from ..services.job_service import JobService
 from ..services.scheduler_service import SchedulerService
+from ..services.health_service import HealthService
 from .auth import get_current_user
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
@@ -83,6 +84,31 @@ async def trigger_immediate_health_check(
     # Schedule immediate check
     result = SchedulerService.schedule_immediate_check(job_id)
     return result
+
+@router.post("/{job_id}/check-now", response_model=dict)
+async def perform_direct_health_check(
+    job_id: UUID,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """Perform immediate synchronous health check and return results directly"""
+    # Verify job belongs to user
+    job = JobService.get_job_by_id(db, job_id, current_user)
+    
+    # Perform immediate health check directly
+    result = HealthService.perform_health_check(db, job)
+    
+    return {
+        "success": True,
+        "job_id": str(result['job_id']),
+        "job_url": result['job_url'],
+        "health_check": result['check_result'],
+        "current_status": result['current_status'],
+        "previous_status": result['previous_status'],
+        "status_changed": result['previous_status'] != result['current_status'],
+        "alert_triggered": result.get('alert_triggered'),
+        "checked_at": result['check_result'].get('timestamp', 'now')
+    }
 
 @router.post("/{job_id}/check/delayed", response_model=dict)
 async def trigger_delayed_health_check(

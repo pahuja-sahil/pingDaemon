@@ -95,6 +95,19 @@ export const useMonitors = () => {
     },
   });
 
+  // Immediate health check mutation
+  const immediateHealthCheckMutation = useMutation({
+    mutationFn: (id: string) => monitorService.performImmediateHealthCheck(id),
+    onSuccess: () => {
+      // Refetch monitors to get updated status after health check
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.monitors });
+    },
+    onError: (error: Error) => {
+      // Error handling is done in the component
+      console.error('Health check failed:', error);
+    },
+  });
+
   return {
     // Data
     monitors,
@@ -109,6 +122,7 @@ export const useMonitors = () => {
     deleteMonitor: deleteMonitorMutation,
     toggleMonitor: toggleMonitorMutation,
     checkMonitor: checkMonitorNowMutation,
+    immediateHealthCheck: immediateHealthCheckMutation.mutateAsync,
     getMonitor: useMonitor,
     
     // Mutation states
@@ -117,6 +131,7 @@ export const useMonitors = () => {
     isDeleting: deleteMonitorMutation.isPending,
     isToggling: toggleMonitorMutation.isPending,
     isChecking: checkMonitorNowMutation.isPending,
+    isImmediateChecking: immediateHealthCheckMutation.isPending,
   };
 };
 

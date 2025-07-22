@@ -12,7 +12,30 @@ export const api = axios.create({
 
 api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('access_token');
+    let token: string | null = null;
+    
+    // Check multiple possible token locations
+    // 1. Legacy localStorage location
+    token = localStorage.getItem('access_token');
+    
+    // 2. Zustand persist store (Remember Me = true)
+    if (!token) {
+      try {
+        const authStore = localStorage.getItem('auth-store');
+        if (authStore) {
+          const parsed = JSON.parse(authStore);
+          token = parsed?.state?.token || null;
+        }
+      } catch {
+        // Ignore parsing errors
+      }
+    }
+    
+    // 3. Session storage (Remember Me = false)  
+    if (!token) {
+      token = sessionStorage.getItem('pingdaemon-token');
+    }
+    
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,8 +54,12 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && originalRequest) {
+      // Clear all possible token storage locations
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
+      localStorage.removeItem('auth-store');
+      sessionStorage.removeItem('pingdaemon-token');
+      sessionStorage.removeItem('pingdaemon-user');
       
       if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
         window.location.href = '/login';
