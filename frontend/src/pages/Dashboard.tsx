@@ -1,14 +1,30 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Plus, Activity, Clock, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Plus, Activity, Clock, CheckCircle, AlertTriangle, BarChart3, TrendingUp } from 'lucide-react';
+import { 
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  PieChart,
+  Pie,
+  Cell,
+  Legend
+} from 'recharts';
 import { useAuth } from '../hooks/useAuth';
+import { useDashboardStats } from '../hooks/useDashboardStats';
 import Card from '../components/common/Card';
 import EmptyState from '../components/common/EmptyState';
 import Layout from '../components/layout/Layout';
+import Spinner from '../components/common/Spinner';
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { stats, chartData, statusDistribution, isLoading } = useDashboardStats();
 
   const StatCard = ({ icon: Icon, title, value, color }: {
     icon: React.ElementType;
@@ -59,49 +75,133 @@ const Dashboard = () => {
           <StatCard
             icon={Activity}
             title="Total Monitors"
-            value={0}
+            value={isLoading ? '...' : stats.totalMonitors}
             color="bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400"
           />
           <StatCard
             icon={CheckCircle}
             title="Healthy"
-            value={0}
+            value={isLoading ? '...' : stats.healthyCount}
             color="bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400"
           />
           <StatCard
             icon={AlertTriangle}
             title="Issues"
-            value={0}
+            value={isLoading ? '...' : stats.unhealthyCount}
             color="bg-red-100 dark:bg-red-900/20 text-red-600 dark:text-red-400"
           />
           <StatCard
             icon={Clock}
-            title="Avg Response"
-            value="--"
+            title="Uptime"
+            value={isLoading ? '--' : `${stats.uptimePercentage}%`}
             color="bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400"
           />
         </motion.div>
 
-        {/* Empty State */}
+        {/* Charts Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
+          className="space-y-6"
         >
-          <Card className="p-6 md:p-8">
-            <EmptyState
-              icon={<Activity className="w-full h-full" />}
-              title="No monitors yet"
-              description="Get started by adding your first website monitor. We'll check its availability and notify you of any issues."
-              action={{
-                label: 'Add Your First Monitor',
-                onClick: () => {
-                  window.location.href = '/monitors/add';
-                },
-                variant: 'primary',
-              }}
-            />
-          </Card>
+          {isLoading ? (
+            <Card className="p-6 md:p-8 flex items-center justify-center">
+              <Spinner size="lg" />
+            </Card>
+          ) : stats.totalMonitors === 0 ? (
+            <Card className="p-6 md:p-8">
+              <EmptyState
+                icon={<Activity className="w-full h-full" />}
+                title="No monitors yet"
+                description="Get started by adding your first website monitor. We'll check its availability and notify you of any issues."
+                action={{
+                  label: 'Add Your First Monitor',
+                  onClick: () => {
+                    window.location.href = '/monitors/add';
+                  },
+                  variant: 'primary',
+                }}
+              />
+            </Card>
+          ) : (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Response Time Chart */}
+              <Card className="p-6">
+                <div className="flex items-center mb-4">
+                  <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Response Times
+                  </h3>
+                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <BarChart data={chartData}>
+                    <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 12 }}
+                      className="text-gray-600 dark:text-gray-400"
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 12 }}
+                      className="text-gray-600 dark:text-gray-400"
+                      label={{ value: 'Response Time (ms)', angle: -90, position: 'insideLeft' }}
+                    />
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'var(--tooltip-bg)',
+                        border: '1px solid var(--tooltip-border)',
+                        borderRadius: '8px'
+                      }}
+                      formatter={(value) => [`${value}ms`, 'Response Time']}
+                      labelFormatter={(label) => `Website: ${label}`}
+                    />
+                    <Bar 
+                      dataKey="responseTime" 
+                      fill="#3b82f6"
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </Card>
+
+              {/* Status Distribution Chart */}
+              <Card className="p-6">
+                <div className="flex items-center mb-4">
+                  <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                    Monitor Status
+                  </h3>
+                </div>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={statusDistribution}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      dataKey="value"
+                      label={({ name, value, percent = 0 }) => 
+                        `${name}: ${value} (${(percent * 100).toFixed(1)}%)`
+                      }
+                    >
+                      {statusDistribution.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ 
+                        backgroundColor: 'var(--tooltip-bg)',
+                        border: '1px solid var(--tooltip-border)',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Legend />
+                  </PieChart>
+                </ResponsiveContainer>
+              </Card>
+            </div>
+          )}
         </motion.div>
 
         {/* Quick Actions */}

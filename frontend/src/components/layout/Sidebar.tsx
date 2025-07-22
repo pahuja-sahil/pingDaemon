@@ -5,14 +5,15 @@ import {
   LayoutDashboard, 
   Monitor, 
   Plus, 
-  Settings, 
   ChevronLeft, 
   ChevronRight,
   LogOut,
-  User 
+  User,
+  Palette
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
+import ThemeToggle from './ThemeToggle';
 
 interface SidebarProps {
   isCollapsed: boolean;
@@ -56,12 +57,6 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
       href: '/monitors/add',
       icon: Plus,
       description: 'Create new monitor',
-    },
-    {
-      name: 'Settings',
-      href: '/settings',
-      icon: Settings,
-      description: 'Account settings',
     },
   ];
 
@@ -115,6 +110,37 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
                 <ChevronLeft className="w-5 h-5 text-gray-500 dark:text-gray-400" />
               )}
             </button>
+          </div>
+        </div>
+
+        {/* Theme Toggle Section */}
+        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
+          <div className={`group relative flex items-center ${isCollapsed ? 'justify-center' : 'justify-between'}`}>
+            <AnimatePresence mode="wait">
+              {!isCollapsed && (
+                <motion.div
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -10 }}
+                  transition={{ duration: 0.2 }}
+                  className="flex items-center space-x-3"
+                >
+                  <Palette className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                    Theme
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+            
+            <ThemeToggle />
+            
+            {/* Tooltip for collapsed state */}
+            {isCollapsed && (
+              <div className="absolute left-full ml-2 px-2 py-1 bg-gray-900 text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-50">
+                Theme Toggle
+              </div>
+            )}
           </div>
         </div>
 

@@ -17,6 +17,8 @@
     --danger: #ef4444;
     --warning: #f59e0b;
     --border: #e5e7eb;
+    --tooltip-bg: #ffffff;
+    --tooltip-border: #e5e7eb;
   }
 
   .dark {
@@ -33,6 +35,8 @@
     --danger: #f87171;
     --warning: #fbbf24;
     --border: #334155;
+    --tooltip-bg: #1e293b;
+    --tooltip-border: #334155;
   }
 
   * {

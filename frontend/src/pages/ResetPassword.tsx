@@ -60,7 +60,7 @@ const ResetPassword = () => {
       try {
         const isValid = await authService.verifyResetToken(token);
         setIsValidToken(isValid);
-      } catch (error) {
+      } catch {
         setIsValidToken(false);
       }
     };
