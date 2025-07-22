@@ -46,17 +46,35 @@ const Monitors = () => {
     checkMonitor 
   } = useMonitors();
   const { toast } = useToast();
+  
+  // Track which monitor is currently loading
+  const [loadingMonitorId, setLoadingMonitorId] = useState<string | null>(null);
 
   const handleToggleMonitor = async (id: string) => {
-    await toggleMonitor.mutateAsync(id);
+    setLoadingMonitorId(id);
+    try {
+      await toggleMonitor.mutateAsync(id);
+    } finally {
+      setLoadingMonitorId(null);
+    }
   };
 
   const handleDeleteMonitor = async (id: string) => {
-    await deleteMonitor.mutateAsync(id);
+    setLoadingMonitorId(id);
+    try {
+      await deleteMonitor.mutateAsync(id);
+    } finally {
+      setLoadingMonitorId(null);
+    }
   };
 
   const handleCheckNow = async (id: string) => {
-    await checkMonitor.mutateAsync(id);
+    setLoadingMonitorId(id);
+    try {
+      await checkMonitor.mutateAsync(id);
+    } finally {
+      setLoadingMonitorId(null);
+    }
   };
 
   const handleRefresh = () => {
@@ -71,8 +89,7 @@ const Monitors = () => {
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
         const matchesSearch = 
-          monitor.url.toLowerCase().includes(searchLower) ||
-          monitor.name?.toLowerCase().includes(searchLower);
+          monitor.url.toLowerCase().includes(searchLower);
         if (!matchesSearch) return false;
       }
 
@@ -92,8 +109,8 @@ const Monitors = () => {
 
       switch (sortBy) {
         case 'name':
-          aValue = a.name || a.url;
-          bValue = b.name || b.url;
+          aValue = a.url;
+          bValue = b.url;
           break;
         case 'status':
           aValue = a.current_status;
@@ -416,11 +433,7 @@ const Monitors = () => {
                   onToggle={handleToggleMonitor}
                   onDelete={handleDeleteMonitor}
                   onCheckNow={handleCheckNow}
-                  isLoading={
-                    toggleMonitor.isPending || 
-                    deleteMonitor.isPending || 
-                    checkMonitor.isPending
-                  }
+                  isLoading={loadingMonitorId === monitor.id}
                 />
               </motion.div>
             ))}

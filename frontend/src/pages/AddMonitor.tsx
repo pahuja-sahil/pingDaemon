@@ -57,14 +57,9 @@ const AddMonitor = () => {
   } = useForm<MonitorFormData>({
     resolver: zodResolver(monitorSchema),
     defaultValues: {
-      name: '',
       url: '',
-      interval: 300,
+      interval: 5,
       failure_threshold: 3,
-      timeout: 30,
-      expected_status_code: 200,
-      expected_response_time: 5000,
-      notification_enabled: true,
       is_enabled: true,
     },
   });
@@ -100,22 +95,8 @@ const AddMonitor = () => {
     }
   };
 
-  const generateMonitorName = (url: string) => {
-    try {
-      const parsedUrl = new URL(url);
-      const domain = parsedUrl.hostname.replace('www.', '');
-      const path = parsedUrl.pathname !== '/' ? ` - ${parsedUrl.pathname}` : '';
-      return `${domain}${path}`;
-    } catch {
-      return url;
-    }
-  };
-
   const handleUrlChange = (url: string) => {
     setValue('url', url);
-    if (url && !watch('name')) {
-      setValue('name', generateMonitorName(url));
-    }
   };
 
   return (
@@ -203,25 +184,6 @@ const AddMonitor = () => {
                     </div>
                   </div>
 
-                  {/* Monitor Name */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Monitor Name *
-                    </label>
-                    <input
-                      {...register('name')}
-                      type="text"
-                      placeholder="My Website Monitor"
-                      className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.name ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    />
-                    {errors.name && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                        {errors.name.message}
-                      </p>
-                    )}
-                  </div>
                 </div>
               </Card>
             </motion.div>
@@ -240,7 +202,7 @@ const AddMonitor = () => {
                   </h2>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-6">
                   {/* Check Interval */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -265,27 +227,6 @@ const AddMonitor = () => {
                     )}
                   </div>
 
-                  {/* Timeout */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Timeout (seconds) *
-                    </label>
-                    <input
-                      {...register('timeout', { valueAsNumber: true })}
-                      type="number"
-                      min="5"
-                      max="300"
-                      placeholder="30"
-                      className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.timeout ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    />
-                    {errors.timeout && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                        {errors.timeout.message}
-                      </p>
-                    )}
-                  </div>
 
                   {/* Failure Threshold */}
                   <div>
@@ -312,32 +253,11 @@ const AddMonitor = () => {
                     )}
                   </div>
 
-                  {/* Expected Status Code */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Expected Status Code
-                    </label>
-                    <input
-                      {...register('expected_status_code', { valueAsNumber: true })}
-                      type="number"
-                      min="100"
-                      max="599"
-                      placeholder="200"
-                      className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.expected_status_code ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    />
-                    {errors.expected_status_code && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                        {errors.expected_status_code.message}
-                      </p>
-                    )}
-                  </div>
                 </div>
               </Card>
             </motion.div>
 
-            {/* Advanced Settings */}
+            {/* Monitor Settings */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -347,75 +267,28 @@ const AddMonitor = () => {
                 <div className="flex items-center gap-2 mb-6">
                   <AlertTriangle className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
-                    Advanced Settings
+                    Monitor Settings
                   </h2>
                 </div>
 
-                <div className="space-y-6">
-                  {/* Expected Response Time */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                      Expected Response Time (ms)
-                    </label>
-                    <input
-                      {...register('expected_response_time', { valueAsNumber: true })}
-                      type="number"
-                      min="1"
-                      max="30000"
-                      placeholder="5000"
-                      className={`w-full px-4 py-3 border rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        errors.expected_response_time ? 'border-red-500' : 'border-gray-300 dark:border-gray-600'
-                      }`}
-                    />
-                    <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-                      Alert if response time exceeds this value (optional)
-                    </p>
-                    {errors.expected_response_time && (
-                      <p className="mt-1 text-sm text-red-600 dark:text-red-400">
-                        {errors.expected_response_time.message}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                        Enable Monitor
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">
+                        Start monitoring immediately after creation
                       </p>
-                    )}
-                  </div>
-
-                  {/* Toggles */}
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Enable Notifications
-                        </label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Receive alerts when this monitor fails
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          {...register('notification_enabled')}
-                          type="checkbox"
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                      </label>
                     </div>
-
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Enable Monitor
-                        </label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Start monitoring immediately after creation
-                        </p>
-                      </div>
-                      <label className="relative inline-flex items-center cursor-pointer">
-                        <input
-                          {...register('is_enabled')}
-                          type="checkbox"
-                          className="sr-only peer"
-                        />
-                        <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
-                      </label>
-                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer">
+                      <input
+                        {...register('is_enabled')}
+                        type="checkbox"
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                    </label>
                   </div>
                 </div>
               </Card>
