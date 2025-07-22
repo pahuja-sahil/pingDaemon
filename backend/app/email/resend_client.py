@@ -99,7 +99,7 @@ class ResendClient:
         recipient_email: str,
         recipient_name: str,
         reset_token: str,
-        base_url: str = "http://localhost:5173"
+        base_url: str = "http://localhost:3000"
     ) -> Dict[str, Any]:
         """
         Send password reset email

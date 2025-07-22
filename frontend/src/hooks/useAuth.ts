@@ -17,10 +17,16 @@ export const useAuth = () => {
     setLoading,
   } = useAuthStore();
 
-  // Check authentication status on mount
+  // Check authentication status on mount, but not immediately after logout
   useEffect(() => {
     if (!isAuthenticated && !isLoading) {
-      checkAuth();
+      // Only check auth if we might have a token (not during logout)
+      const hasToken = localStorage.getItem('access_token') || 
+                       sessionStorage.getItem('pingdaemon-token') ||
+                       localStorage.getItem('auth-store');
+      if (hasToken) {
+        checkAuth();
+      }
     }
   }, [isAuthenticated, isLoading, checkAuth]);
 

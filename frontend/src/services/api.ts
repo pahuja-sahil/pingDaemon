@@ -61,9 +61,7 @@ api.interceptors.response.use(
       sessionStorage.removeItem('pingdaemon-token');
       sessionStorage.removeItem('pingdaemon-user');
       
-      if (window.location.pathname !== '/login' && window.location.pathname !== '/signup') {
-        window.location.href = '/login';
-      }
+      // Let manual logout handle navigation, don't redirect automatically
     }
 
     const errorMessage = getErrorMessage(error);

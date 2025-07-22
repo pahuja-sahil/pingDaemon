@@ -35,8 +35,8 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
   }, []);
 
   const handleLogout = () => {
-    logout();
     toast.success('Logged out successfully');
+    logout();
   };
 
   const navigation = [

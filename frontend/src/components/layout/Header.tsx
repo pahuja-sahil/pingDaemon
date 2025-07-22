@@ -16,9 +16,8 @@ const Header = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    logout();
     toast.success('Logged out successfully');
-    navigate('/', { replace: true });
+    logout();
   };
 
   const navigation = [

@@ -2,6 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { Toaster } from 'sonner';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
+import { useSessionTimeout } from '../../hooks/useSessionTimeout';
 import { useThemeStore } from '../../stores/themeStore';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -23,6 +24,14 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
   const { toast } = useToast();
   const { isDark } = useThemeStore();
 
+  // Set up session timeout monitoring for authenticated users
+  useSessionTimeout({
+    warningMinutes: 5,
+    redirectOnTimeout: true,
+    showWarningToast: true,
+    showTimeoutToast: true,
+  });
+
   // Check screen size
   useEffect(() => {
     const checkMobile = () => {
@@ -40,8 +49,8 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
   }, []);
 
   const handleLogout = () => {
-    logout();
     toast.success('Logged out successfully');
+    logout();
   };
 
   const shouldShowSidebar = showSidebar && isAuthenticated;
@@ -121,7 +130,7 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
 
       {/* Toast Notifications */}
       <Toaster
-        position="top-right"
+        position="bottom-right"
         expand
         visibleToasts={4}
         closeButton

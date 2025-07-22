@@ -30,10 +30,24 @@ const Login = () => {
   const onSubmit = async (data: LoginFormData) => {
     try {
       await login(data, rememberMe);
-      toast.success('Welcome back!');
-      navigate('/');
+      toast.success('Signed in successfully! Welcome back.');
+      // Small delay to ensure toast is visible before navigation
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Login failed');
+      const errorMessage = error instanceof Error ? error.message : 'Sign in failed';
+      
+      // Provide more specific error messages based on common scenarios
+      if (errorMessage.toLowerCase().includes('invalid') || errorMessage.toLowerCase().includes('incorrect')) {
+        toast.error('Invalid email or password. Please check your credentials and try again.');
+      } else if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('connection')) {
+        toast.error('Network error. Please check your connection and try again.');
+      } else if (errorMessage.toLowerCase().includes('server')) {
+        toast.error('Server error. Please try again in a few moments.');
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 

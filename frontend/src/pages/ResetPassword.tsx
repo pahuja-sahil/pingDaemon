@@ -53,6 +53,12 @@ const ResetPassword = () => {
   useEffect(() => {
     if (!token) {
       setIsValidToken(false);
+      toast.error('Reset token is missing from the URL.');
+      return;
+    }
+
+    // Don't validate token again if reset was successful
+    if (isSuccess) {
       return;
     }
 
@@ -60,13 +66,18 @@ const ResetPassword = () => {
       try {
         const isValid = await authService.verifyResetToken(token);
         setIsValidToken(isValid);
-      } catch {
+        if (!isValid) {
+          toast.error('Invalid or expired reset token.');
+        }
+      } catch (error) {
+        console.error('Token validation error:', error);
         setIsValidToken(false);
+        toast.error('Unable to validate reset token. Please check your internet connection.');
       }
     };
 
     validateToken();
-  }, [token]);
+  }, [token, toast, isSuccess]);
 
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) return;
@@ -85,7 +96,16 @@ const ResetPassword = () => {
       }, 3000);
       
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : 'Failed to reset password');
+      console.error('Password reset error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to reset password';
+      
+      if (errorMessage.toLowerCase().includes('network') || errorMessage.toLowerCase().includes('timeout')) {
+        toast.error('Network timeout. Please check your connection and try again.');
+      } else if (errorMessage.toLowerCase().includes('token')) {
+        toast.error('Reset token has expired. Please request a new password reset.');
+      } else {
+        toast.error(errorMessage);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -133,7 +153,7 @@ const ResetPassword = () => {
         </nav>
 
         <div className="flex items-center justify-center min-h-[calc(100vh-120px)] px-4">
-          <Card className="w-full max-w-md p-8 text-center">
+          <Card className="w-full max-w-lg p-10 text-center">
             <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
               <Lock className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
@@ -181,7 +201,7 @@ const ResetPassword = () => {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.3, ease: 'easeOut' }}
           >
-            <Card className="w-full max-w-md p-8 text-center">
+            <Card className="w-full max-w-lg p-10 text-center">
               <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
@@ -228,13 +248,14 @@ const ResetPassword = () => {
       </nav>
 
       {/* Form Content */}
-      <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-120px)] px-4">
+      <div className="relative z-10 flex items-center justify-center min-h-[calc(100vh-120px)] px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: 'easeOut' }}
+          className="w-full max-w-lg"
         >
-          <Card className="w-full max-w-md p-8">
+          <Card className="w-full max-w-lg p-10">
             <div className="text-center mb-8">
               <div className="flex justify-center mb-4">
                 <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
