@@ -5,6 +5,7 @@ import { useAuth } from './hooks/useAuth';
 import { useThemeStore } from './stores/themeStore';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
+import { SessionProvider } from './providers/SessionProvider';
 
 // Pages
 import Landing from './pages/Landing';
@@ -163,11 +164,13 @@ function App() {
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
         <Router>
-          <ErrorBoundary>
-            <div className="min-h-screen">
-              <RouteHandler />
-            </div>
-          </ErrorBoundary>
+          <SessionProvider>
+            <ErrorBoundary>
+              <div className="min-h-screen">
+                <RouteHandler />
+              </div>
+            </ErrorBoundary>
+          </SessionProvider>
         </Router>
         
         {/* Global Toast Notifications */}

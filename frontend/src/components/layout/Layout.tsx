@@ -1,7 +1,6 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../hooks/useAuth';
-import { useSessionTimeout } from '../../hooks/useSessionTimeout';
 import Header from './Header';
 import Sidebar from './Sidebar';
 import BottomNavigation from './BottomNavigation';
@@ -20,14 +19,6 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
   const [isMobile, setIsMobile] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
-
-  // Set up session timeout monitoring for authenticated users
-  useSessionTimeout({
-    warningMinutes: 5,
-    redirectOnTimeout: true,
-    showWarningToast: true,
-    showTimeoutToast: true,
-  });
 
   // Check screen size
   useEffect(() => {
