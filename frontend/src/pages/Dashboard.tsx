@@ -17,6 +17,7 @@ import {
 } from 'recharts';
 import { useAuth } from '../hooks/useAuth';
 import { useDashboardStats } from '../hooks/useDashboardStats';
+import { useThemeStore } from '../stores/themeStore';
 import Card from '../components/common/Card';
 import EmptyState from '../components/common/EmptyState';
 import Layout from '../components/layout/Layout';
@@ -25,6 +26,7 @@ import Spinner from '../components/common/Spinner';
 const Dashboard = () => {
   const { user } = useAuth();
   const { stats, chartData, statusDistribution, isLoading } = useDashboardStats();
+  const { isDark } = useThemeStore();
 
   const StatCard = ({ icon: Icon, title, value, color }: {
     icon: React.ElementType;
@@ -181,9 +183,6 @@ const Dashboard = () => {
                       cy="50%"
                       outerRadius={100}
                       dataKey="value"
-                      label={({ name, value, percent = 0 }) => 
-                        `${name}: ${value} (${(percent * 100).toFixed(1)}%)`
-                      }
                     >
                       {statusDistribution.map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
@@ -191,9 +190,15 @@ const Dashboard = () => {
                     </Pie>
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: 'var(--tooltip-bg)',
-                        border: '1px solid var(--tooltip-border)',
+                        backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                        border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`,
                         borderRadius: '8px'
+                      }}
+                      labelStyle={{
+                        color: isDark ? '#f1f5f9' : '#111827'
+                      }}
+                      itemStyle={{
+                        color: isDark ? '#f1f5f9' : '#111827'
                       }}
                     />
                     <Legend />

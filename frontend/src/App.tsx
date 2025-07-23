@@ -1,6 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'sonner';
 import { useAuth } from './hooks/useAuth';
+import { useThemeStore } from './stores/themeStore';
 import ProtectedRoute from './components/auth/ProtectedRoute';
 import ErrorBoundary from './components/common/ErrorBoundary';
 
@@ -144,6 +146,8 @@ const RouteHandler = () => {
 };
 
 function App() {
+  const { isDark } = useThemeStore();
+
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
@@ -154,6 +158,28 @@ function App() {
             </div>
           </ErrorBoundary>
         </Router>
+        
+        {/* Global Toast Notifications */}
+        <Toaster
+          position="bottom-right"
+          expand
+          visibleToasts={4}
+          closeButton
+          toastOptions={{
+            duration: 4000,
+            style: {
+              background: isDark ? 'rgb(31 41 55)' : 'rgb(255 255 255)',
+              color: isDark ? 'rgb(243 244 246)' : 'rgb(17 24 39)',
+              border: `1px solid ${isDark ? 'rgb(75 85 99)' : 'rgb(229 231 235)'}`,
+              boxShadow: isDark 
+                ? '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1)'
+                : '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+            },
+            className: `${isDark ? 'dark' : ''} font-medium`,
+          }}
+          theme={isDark ? 'dark' : 'light'}
+          richColors
+        />
       </QueryClientProvider>
     </ErrorBoundary>
   );
