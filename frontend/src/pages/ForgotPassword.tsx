@@ -14,7 +14,13 @@ import { useToast } from '../hooks/useToast';
 import authService from '../services/auth.service';
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
+  email: z
+    .string()
+    .email('Please enter a valid email address')
+    .refine(
+      (email) => email.toLowerCase().endsWith('@gmail.com'),
+      'Only Gmail accounts (@gmail.com) are allowed'
+    ),
 });
 
 type ForgotPasswordFormData = z.infer<typeof forgotPasswordSchema>;
@@ -167,9 +173,9 @@ const ForgotPassword = () => {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <div>
                 <Input
-                  label="Email Address"
+                  label="Gmail Address"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Enter your Gmail address"
                   error={errors.email?.message}
                   {...register('email')}
                 />

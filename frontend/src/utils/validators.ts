@@ -5,7 +5,11 @@ export const loginSchema = z.object({
   email: z
     .string()
     .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
+    .email('Please enter a valid email address')
+    .refine(
+      (email) => email.toLowerCase().endsWith('@gmail.com'),
+      'Only Gmail accounts (@gmail.com) are allowed'
+    ),
   password: z
     .string()
     .min(1, 'Password is required')
@@ -16,7 +20,11 @@ export const registerSchema = z.object({
   email: z
     .string()
     .min(1, 'Email is required')
-    .email('Please enter a valid email address'),
+    .email('Please enter a valid email address')
+    .refine(
+      (email) => email.toLowerCase().endsWith('@gmail.com'),
+      'Only Gmail accounts (@gmail.com) are allowed'
+    ),
   password: z
     .string()
     .min(1, 'Password is required')
@@ -87,10 +95,10 @@ export const isValidUrl = (url: string): boolean => {
   }
 };
 
-// Email validation helper
+// Email validation helper (Gmail only)
 export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  return emailRegex.test(email);
+  return emailRegex.test(email) && email.toLowerCase().endsWith('@gmail.com');
 };
 
 // Password strength checker

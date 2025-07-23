@@ -95,9 +95,9 @@ const Login = () => {
             {/* Login Form */}
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
               <Input
-                label="Email"
+                label="Gmail Address"
                 type="email"
-                placeholder="Enter your email"
+                placeholder="Enter your Gmail address"
                 error={errors.email?.message}
                 {...register('email')}
               />

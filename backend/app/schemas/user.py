@@ -1,10 +1,16 @@
 # User signup/login schemas
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, validator
 from typing import Optional
 from uuid import UUID
 
 class UserBase(BaseModel):
     email: EmailStr
+    
+    @validator('email')
+    def email_must_be_gmail(cls, v):
+        if not str(v).lower().endswith('@gmail.com'):
+            raise ValueError('Only Gmail accounts (@gmail.com) are allowed')
+        return v
 
 class UserCreate(UserBase):
     password: str
@@ -21,6 +27,12 @@ class UserResponse(UserBase):
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr
+    
+    @validator('email')
+    def email_must_be_gmail(cls, v):
+        if not str(v).lower().endswith('@gmail.com'):
+            raise ValueError('Only Gmail accounts (@gmail.com) are allowed')
+        return v
 
 class ResetPasswordRequest(BaseModel):
     token: str
