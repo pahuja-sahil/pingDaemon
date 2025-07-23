@@ -9,7 +9,8 @@ import {
   ChevronRight,
   LogOut,
   User,
-  Palette
+  Palette,
+  BarChart3
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
@@ -57,6 +58,12 @@ const Sidebar = ({ isCollapsed, onToggle }: SidebarProps) => {
       href: '/monitors/add',
       icon: Plus,
       description: 'Create new monitor',
+    },
+    {
+      name: 'Reports',
+      href: '/reports',
+      icon: BarChart3,
+      description: 'Performance reports',
     },
   ];
 

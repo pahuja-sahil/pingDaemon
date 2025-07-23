@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .config import settings
 from .database import create_tables
-from .routes import auth, jobs
+from .routes import auth, jobs, reports
 
 app = FastAPI(title="pingDaemon", description="Uptime Monitor - Health Check System")
 
@@ -18,6 +18,7 @@ app.add_middleware(
 # Include routers
 app.include_router(auth.router)
 app.include_router(jobs.router)
+app.include_router(reports.router)
 
 @app.get("/")
 async def root():

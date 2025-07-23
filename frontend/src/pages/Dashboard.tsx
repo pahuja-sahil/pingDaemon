@@ -254,19 +254,21 @@ const Dashboard = () => {
               </Card>
             </Link>
 
-            <Card hoverable clickable className="p-4 md:p-6 md:col-span-2 lg:col-span-1">
-              <div className="flex items-center">
-                <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600 dark:text-green-400 flex-shrink-0" />
-                <div className="ml-3 md:ml-4 min-w-0">
-                  <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
-                    View Reports
-                  </h3>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Check uptime and performance reports
-                  </p>
+            <Link to="/reports">
+              <Card hoverable clickable className="p-4 md:p-6 md:col-span-2 lg:col-span-1">
+                <div className="flex items-center">
+                  <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600 dark:text-green-400 flex-shrink-0" />
+                  <div className="ml-3 md:ml-4 min-w-0">
+                    <h3 className="text-base md:text-lg font-medium text-gray-900 dark:text-white">
+                      View Reports
+                    </h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Check uptime and performance reports
+                    </p>
+                  </div>
                 </div>
-              </div>
-            </Card>
+              </Card>
+            </Link>
           </div>
         </motion.div>
       </div>

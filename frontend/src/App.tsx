@@ -16,6 +16,7 @@ import Dashboard from './pages/Dashboard';
 import Monitors from './pages/Monitors';
 import AddMonitor from './pages/AddMonitor';
 import EditMonitor from './pages/EditMonitor';
+import Reports from './pages/Reports';
 
 // Create a client with enhanced configuration
 const queryClient = new QueryClient({
@@ -135,6 +136,16 @@ const RouteHandler = () => {
         element={
           <ProtectedRoute>
             <EditMonitor />
+          </ProtectedRoute>
+        } 
+      />
+
+      {/* Reports Route */}
+      <Route 
+        path="/reports" 
+        element={
+          <ProtectedRoute>
+            <Reports />
           </ProtectedRoute>
         } 
       />

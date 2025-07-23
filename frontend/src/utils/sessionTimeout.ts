@@ -3,7 +3,7 @@ import { useAuthStore } from '../stores/authStore';
 export interface DecodedToken {
   exp: number;
   sub: string;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export function decodeJWT(token: string): DecodedToken | null {

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, User, LogOut, Settings, Monitor } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
@@ -13,7 +13,6 @@ const Header = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
   const location = useLocation();
-  const navigate = useNavigate();
 
   const handleLogout = () => {
     toast.success('Logged out successfully');
