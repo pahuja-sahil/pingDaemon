@@ -97,10 +97,6 @@ export const useAuthStore = create<AuthState>()(
           isLoading: false,
           error: null,
         });
-        // Smooth transition to landing page
-        setTimeout(() => {
-          window.location.href = '/landing';
-        }, 300);
       },
 
       checkAuth: async () => {

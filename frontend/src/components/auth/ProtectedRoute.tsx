@@ -8,7 +8,7 @@ interface ProtectedRouteProps {
   redirectTo?: string;
 }
 
-const ProtectedRoute = ({ children, redirectTo = '/login' }: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children, redirectTo = '/' }: ProtectedRouteProps) => {
   const { isAuthenticated, isLoading, checkAuth } = useAuth();
   const location = useLocation();
 

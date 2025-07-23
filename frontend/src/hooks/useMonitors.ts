@@ -30,7 +30,7 @@ export const useMonitors = () => {
     mutationFn: (data: CreateMonitorRequest) => monitorService.createMonitor(data),
     onSuccess: (newMonitor) => {
       queryClient.setQueryData<Monitor[]>(QUERY_KEYS.monitors, (old = []) => [...old, newMonitor]);
-      toast.success('Monitor created successfully');
+      // Toast is handled by the component for better control over the flow
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create monitor');

@@ -64,25 +64,25 @@ const Reports = () => {
     trendValue: string;
     color: string;
   }) => (
-    <Card hoverable className="p-6">
-      <div className="flex items-start justify-between">
+    <Card hoverable className="p-4 sm:p-6">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between space-y-2 sm:space-y-0">
         <div className="flex items-center">
-          <div className={`w-12 h-12 ${color} rounded-xl flex items-center justify-center`}>
-            <Icon className="w-6 h-6" />
+          <div className={`w-10 h-10 sm:w-12 sm:h-12 ${color} rounded-xl flex items-center justify-center flex-shrink-0`}>
+            <Icon className="w-5 h-5 sm:w-6 sm:h-6" />
           </div>
-          <div className="ml-4">
-            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">
+          <div className="ml-3 sm:ml-4 min-w-0">
+            <p className="text-xs sm:text-sm font-medium text-gray-600 dark:text-gray-400 truncate">
               {title}
             </p>
-            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
+            <p className="text-lg sm:text-2xl font-bold text-gray-900 dark:text-white mt-1">
               {value}
             </p>
-            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+            <p className="text-xs text-gray-500 dark:text-gray-500 mt-1 hidden sm:block">
               {subtitle}
             </p>
           </div>
         </div>
-        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium ${
+        <div className={`flex items-center space-x-1 px-2 py-1 rounded-full text-xs font-medium self-end sm:self-start ${
           trend === 'up' 
             ? 'bg-green-100 dark:bg-green-900/20 text-green-700 dark:text-green-400'
             : trend === 'down'
@@ -99,7 +99,7 @@ const Reports = () => {
 
   return (
     <Layout showSidebar={true}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -136,7 +136,7 @@ const Reports = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8"
             >
               <ReportCard
                 icon={Target}
@@ -177,21 +177,54 @@ const Reports = () => {
             </motion.div>
 
             {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
               {/* Uptime History */}
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2 }}
               >
-                <Card className="p-6">
-                  <div className="flex items-center mb-6">
-                    <CheckCircle2 className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Card className="p-4 sm:p-6">
+                  <div className="flex items-center mb-4 sm:mb-6">
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 mr-2" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                       Uptime History
                     </h3>
                   </div>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <ResponsiveContainer width="100%" height={250} className="sm:hidden">
+                    <AreaChart data={uptimeHistory}>
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis 
+                        dataKey="date" 
+                        tick={{ fontSize: 10 }}
+                        className="text-gray-600 dark:text-gray-400"
+                        hide
+                      />
+                      <YAxis 
+                        domain={[95, 100]}
+                        tick={{ fontSize: 10 }}
+                        className="text-gray-600 dark:text-gray-400"
+                        width={30}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                          border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`,
+                          borderRadius: '8px',
+                          fontSize: '12px'
+                        }}
+                        formatter={(value) => [`${value}%`, 'Uptime']}
+                      />
+                      <Area 
+                        type="monotone" 
+                        dataKey="uptime" 
+                        stroke="#10b981" 
+                        fill="#10b981"
+                        fillOpacity={0.1}
+                      />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                  <ResponsiveContainer width="100%" height={300} className="hidden sm:block">
                     <AreaChart data={uptimeHistory}>
                       <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                       <XAxis 
@@ -237,14 +270,48 @@ const Reports = () => {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3 }}
               >
-                <Card className="p-6">
-                  <div className="flex items-center mb-6">
-                    <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                <Card className="p-4 sm:p-6">
+                  <div className="flex items-center mb-4 sm:mb-6">
+                    <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                    <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                       Response Time Trends
                     </h3>
                   </div>
-                  <ResponsiveContainer width="100%" height={300}>
+                  <div className="sm:hidden">
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={responseTimeHistory}>
+                        <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                        <XAxis 
+                          dataKey="time" 
+                          tick={{ fontSize: 10 }}
+                          className="text-gray-600 dark:text-gray-400"
+                          hide
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 10 }}
+                          className="text-gray-600 dark:text-gray-400"
+                          width={35}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                            border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`,
+                            borderRadius: '8px',
+                            fontSize: '12px'
+                          }}
+                          formatter={(value) => [`${value}ms`, 'Response Time']}
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="responseTime" 
+                          stroke="#3b82f6" 
+                          strokeWidth={2}
+                          dot={{ fill: '#3b82f6', strokeWidth: 1, r: 3 }}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                  <ResponsiveContainer width="100%" height={300} className="hidden sm:block">
                     <LineChart data={responseTimeHistory}>
                       <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                       <XAxis 

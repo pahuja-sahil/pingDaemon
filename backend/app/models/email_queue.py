@@ -33,5 +33,5 @@ class EmailQueue(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     
     # Relationships
-    job = relationship("Job")
+    job = relationship("Job", back_populates="email_queue")
     user = relationship("User")

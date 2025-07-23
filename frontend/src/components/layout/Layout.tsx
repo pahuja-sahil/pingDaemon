@@ -1,5 +1,6 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -19,6 +20,7 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
   const [isMobile, setIsMobile] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Check screen size
   useEffect(() => {
@@ -37,8 +39,10 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
   }, []);
 
   const handleLogout = () => {
-    toast.success('Logged out successfully');
+    // Clear auth state - ProtectedRoute will automatically redirect to '/' (landing page)
     logout();
+    // Show success toast
+    toast.success('Logged out successfully');
   };
 
   const shouldShowSidebar = showSidebar && isAuthenticated;
@@ -59,31 +63,29 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
 
       {/* Top bar for authenticated pages on mobile */}
       {isAuthenticated && isMobile && (
-        <header className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-40 h-16">
+        <header className="fixed top-0 left-0 right-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-40 h-16 shadow-sm">
           <div className="flex items-center justify-between h-full px-4">
-            <div className="flex items-center space-x-3">
-              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="flex items-center space-x-3 min-w-0">
+              <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center flex-shrink-0">
                 <span className="text-white font-bold text-sm">P</span>
               </div>
-              <span className="text-lg font-bold text-gray-900 dark:text-white">
+              <span className="text-lg font-bold text-gray-900 dark:text-white truncate">
                 pingDaemon
               </span>
             </div>
             
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-2 flex-shrink-0">
               <ThemeToggle />
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center">
-                  <User className="w-4 h-4 text-white" />
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                  title="Logout"
-                >
-                  <LogOut className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                </button>
+              <div className="w-8 h-8 bg-blue-600 dark:bg-blue-500 rounded-full flex items-center justify-center">
+                <User className="w-4 h-4 text-white" />
               </div>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              </button>
             </div>
           </div>
         </header>
@@ -102,12 +104,14 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
           damping: 30
         }}
         className={`
+          min-h-screen
           ${showHeader && !isAuthenticated ? 'pt-0' : ''}
           ${isAuthenticated && isMobile ? 'pt-16 pb-20' : ''}
-          ${shouldShowSidebar && !isMobile ? (sidebarCollapsed ? 'ml-20' : 'ml-70') : ''}
+          ${shouldShowSidebar && !isMobile ? '' : ''}
         `}
         style={{
-          marginLeft: shouldShowSidebar && !isMobile ? (sidebarCollapsed ? '80px' : '280px') : '0'
+          marginLeft: shouldShowSidebar && !isMobile ? (sidebarCollapsed ? '80px' : '280px') : '0',
+          minHeight: isMobile ? 'calc(100vh - 80px)' : '100vh'
         }}
       >
         {children}

@@ -99,22 +99,50 @@ class JobService:
     
     @staticmethod
     def delete_job(db: Session, job_id: UUID, user: User) -> bool:
-        """Delete a job and all related records"""
+        """Delete a job and all related records with proper error handling"""
         from ..models.log import HealthLog
         from ..models.alert import Alert
+        from ..models.email_queue import EmailQueue
         
-        job = JobService.get_job_by_id(db, job_id, user)
-        
-        # Delete related health logs first
-        db.query(HealthLog).filter(HealthLog.job_id == job_id).delete()
-        
-        # Delete related alerts
-        db.query(Alert).filter(Alert.job_id == job_id).delete()
-        
-        # Now delete the job
-        db.delete(job)
-        db.commit()
-        return True
+        try:
+            # Verify job exists and user owns it
+            job = JobService.get_job_by_id(db, job_id, user)
+            job_url = job.url  # Store for logging
+            
+            # Get counts for logging
+            email_count = db.query(EmailQueue).filter(EmailQueue.job_id == job_id).count()
+            log_count = db.query(HealthLog).filter(HealthLog.job_id == job_id).count()
+            alert_count = db.query(Alert).filter(Alert.job_id == job_id).count()
+            
+            print(f"Deleting job {job_id} ({job_url}) with {email_count} emails, {log_count} logs, {alert_count} alerts")
+            
+            # Delete related records in proper order
+            # 1. Delete email queue entries
+            deleted_emails = db.query(EmailQueue).filter(EmailQueue.job_id == job_id).delete(synchronize_session=False)
+            
+            # 2. Delete health logs
+            deleted_logs = db.query(HealthLog).filter(HealthLog.job_id == job_id).delete(synchronize_session=False)
+            
+            # 3. Delete alerts
+            deleted_alerts = db.query(Alert).filter(Alert.job_id == job_id).delete(synchronize_session=False)
+            
+            # 4. Finally delete the job itself
+            db.delete(job)
+            
+            # Commit all changes
+            db.commit()
+            
+            print(f"Successfully deleted job {job_id}. Removed: {deleted_emails} emails, {deleted_logs} logs, {deleted_alerts} alerts")
+            return True
+            
+        except Exception as e:
+            # Rollback on any error
+            db.rollback()
+            print(f"Failed to delete job {job_id}: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to delete monitor: {str(e)}"
+            )
     
     @staticmethod
     def toggle_job_status(db: Session, job_id: UUID, user: User) -> Job:

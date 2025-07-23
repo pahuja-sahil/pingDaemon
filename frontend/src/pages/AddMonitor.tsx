@@ -44,7 +44,7 @@ const intervalOptions = [
 
 const AddMonitor = () => {
   const navigate = useNavigate();
-  const { createMonitor } = useMonitors();
+  const { createMonitor, immediateHealthCheck } = useMonitors();
   const { toast } = useToast();
   const [isTestingUrl, setIsTestingUrl] = useState(false);
 
@@ -68,10 +68,22 @@ const AddMonitor = () => {
 
   const onSubmit = async (data: MonitorFormData) => {
     try {
-      await createMonitor.mutateAsync(data);
-      toast.success('Monitor created successfully');
+      // Create the monitor first
+      const newMonitor = await createMonitor.mutateAsync(data);
+      
+      // Immediately check the health status of the new monitor using toast.promise
+      await toast.promise(
+        immediateHealthCheck(newMonitor.id),
+        {
+          loading: 'Checking monitor status...',
+          success: 'Monitor created and status checked successfully!',
+          error: 'Monitor created but initial health check failed'
+        }
+      );
+      
       navigate('/monitors');
-    } catch {
+    } catch (error) {
+      console.error('Failed to create monitor:', error);
       toast.error('Failed to create monitor');
     }
   };

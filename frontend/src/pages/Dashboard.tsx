@@ -51,7 +51,7 @@ const Dashboard = () => {
 
   return (
     <Layout showSidebar={true}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6 md:py-8">
         {/* Welcome Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -72,7 +72,7 @@ const Dashboard = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 mb-6 md:mb-8"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 md:gap-6 mb-6 md:mb-8"
         >
           <StatCard
             icon={Activity}
@@ -127,16 +127,49 @@ const Dashboard = () => {
               />
             </Card>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
               {/* Response Time Chart */}
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6">
                 <div className="flex items-center mb-4">
-                  <BarChart3 className="w-5 h-5 text-blue-600 dark:text-blue-400 mr-2" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400 mr-2" />
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                     Response Times
                   </h3>
                 </div>
-                <ResponsiveContainer width="100%" height={300}>
+                <div className="sm:hidden">
+                  <ResponsiveContainer width="100%" height={250}>
+                    <BarChart data={chartData}>
+                      <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
+                      <XAxis 
+                        dataKey="name" 
+                        tick={{ fontSize: 10 }}
+                        className="text-gray-600 dark:text-gray-400"
+                        hide
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 10 }}
+                        className="text-gray-600 dark:text-gray-400"
+                        width={35}
+                      />
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: 'var(--tooltip-bg)',
+                          border: '1px solid var(--tooltip-border)',
+                          borderRadius: '8px',
+                          fontSize: '12px'
+                        }}
+                        formatter={(value) => [`${value}ms`, 'Response Time']}
+                        labelFormatter={(label) => `Website: ${label}`}
+                      />
+                      <Bar 
+                        dataKey="responseTime" 
+                        fill="#3b82f6"
+                        radius={[4, 4, 0, 0]}
+                      />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+                <ResponsiveContainer width="100%" height={300} className="hidden sm:block">
                   <BarChart data={chartData}>
                     <CartesianGrid strokeDasharray="3 3" className="opacity-30" />
                     <XAxis 
@@ -168,14 +201,40 @@ const Dashboard = () => {
               </Card>
 
               {/* Status Distribution Chart */}
-              <Card className="p-6">
+              <Card className="p-4 sm:p-6">
                 <div className="flex items-center mb-4">
-                  <TrendingUp className="w-5 h-5 text-green-600 dark:text-green-400 mr-2" />
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 dark:text-green-400 mr-2" />
+                  <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
                     Monitor Status
                   </h3>
                 </div>
-                <ResponsiveContainer width="100%" height={300}>
+                <div className="sm:hidden">
+                  <ResponsiveContainer width="100%" height={220}>
+                    <PieChart>
+                      <Pie
+                        data={statusDistribution}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        dataKey="value"
+                      >
+                        {statusDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ 
+                          backgroundColor: isDark ? '#1e293b' : '#ffffff',
+                          border: `1px solid ${isDark ? '#334155' : '#e5e7eb'}`,
+                          borderRadius: '8px',
+                          fontSize: '12px'
+                        }}
+                      />
+                      <Legend wrapperStyle={{ fontSize: '12px' }} />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+                <ResponsiveContainer width="100%" height={300} className="hidden sm:block">
                   <PieChart>
                     <Pie
                       data={statusDistribution}
@@ -221,7 +280,7 @@ const Dashboard = () => {
               Quick Actions
             </h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <Link to="/monitors/add">
               <Card hoverable clickable className="p-4 md:p-6">
                 <div className="flex items-center">
@@ -255,7 +314,7 @@ const Dashboard = () => {
             </Link>
 
             <Link to="/reports">
-              <Card hoverable clickable className="p-4 md:p-6 md:col-span-2 lg:col-span-1">
+              <Card hoverable clickable className="p-4 md:p-6 sm:col-span-2 lg:col-span-1">
                 <div className="flex items-center">
                   <CheckCircle className="w-6 h-6 md:w-8 md:h-8 text-green-600 dark:text-green-400 flex-shrink-0" />
                   <div className="ml-3 md:ml-4 min-w-0">
