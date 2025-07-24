@@ -1,102 +1,104 @@
 # 📡 pingDaemon
 
-A comprehensive URL monitoring system that performs periodic health checks on configured URLs and triggers alerts on failures. Built with FastAPI backend and React frontend.
+A comprehensive website monitoring system that performs automated health checks and sends instant alerts when your websites go down. Built with FastAPI backend and React frontend.
 
-![Status](https://img.shields.io/badge/status-in%20development-yellow)
+![Status](https://img.shields.io/badge/status-production%20ready-green)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
+## ✨ What is pingDaemon?
 
-## 🚀 Features
+pingDaemon is a **production-ready website monitoring solution** that continuously watches your websites and services, alerting you immediately when problems occur. Whether you're monitoring a personal blog or critical business applications, pingDaemon ensures you're the first to know when something goes wrong.
 
-- **URL Monitoring**: Add, edit, and manage URLs with customizable check intervals
-- **Health Checks**: Periodic monitoring with response time tracking and status logging
-- **Alert System**: Email notifications for downtime, slow responses, and recovery
-- **Analytics Dashboard**: Uptime statistics, performance metrics, and historical data
-- **Real-time Status**: Live monitoring with visual status indicators
-- **REST API**: Complete API for integration and automation
+### Key Features
 
-## 🏗️ Architecture
+- **🔄 Automated Monitoring** - Continuous health checks every 5-60 minutes
+- **📧 Instant Email Alerts** - Get notified the moment your site goes down or recovers
+- **📊 Real-time Dashboard** - Beautiful interface showing all your monitors at a glance
+- **📈 Performance Analytics** - Track uptime, response times, and historical data
+- **🌙 Dark/Light Theme** - Modern UI that adapts to your preference
+- **📱 Mobile Responsive** - Monitor your sites from any device
+- **🔐 Secure Authentication** - User accounts with Gmail validation and password recovery
 
-```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   React App     │    │   FastAPI       │    │   PostgreSQL    │
-│   (Frontend)    │◄──►│   (Backend)     │◄──►│   (Database)    │
-│   Port 3000     │    │   Port 8000     │    │   Port 5432     │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                       ┌─────────────────┐
-                       │     Redis       │
-                       │  (Task Queue)   │
-                       │   Port 6379     │
-                       └─────────────────┘
-                                │
-                       ┌─────────────────┐
-                       │     Celery      │
-                       │ (Background     │
-                       │  Health Checks) │
-                       └─────────────────┘
-```
+## 🚀 Quick Start with Docker
 
-## 🛠️ Technology Stack
-
-### Backend
-- **FastAPI** - Modern Python web framework
-- **PostgreSQL** - Primary database
-- **SQLAlchemy** - ORM and database migrations
-- **Alembic** - Database version control
-- **Celery** - Background task processing
-- **Redis** - Task queue and caching
-- **Pydantic** - Data validation and serialization
-
-### Frontend
-- **React 18** - User interface framework
-- **Vite** - Build tool and development server
-- **TailwindCSS** - Utility-first CSS framework
-- **Chart.js** - Data visualization
-- **Axios** - HTTP client
-
-## 🚀 Quick Start
+The easiest way to get pingDaemon running is with Docker Compose:
 
 ### Prerequisites
+- Docker and Docker Compose installed
+- A Gmail account for sending alert emails
 
-- Python 3.8+
-- Node.js 16+
-- PostgreSQL 12+
-- Redis 6+
-
-### 1. Clone Repository
+### 1. Clone and Setup
 
 ```bash
-git clone <repository-url>
+git clone <your-repo-url>
 cd pingDaemon
+
+# Create environment file
+cp .env.example .env
+# Edit .env with your configuration (see below)
 ```
 
-### 2. Backend Setup
+### 2. Configure Environment
+
+Edit the `.env` file with your settings:
 
 ```bash
-# Navigate to backend
+# Database Configuration
+POSTGRES_DB=pingdaemon
+POSTGRES_USER=pingdaemon_user
+POSTGRES_PASSWORD=your_secure_password
+
+# Application URLs
+DATABASE_URL=postgresql://pingdaemon_user:your_secure_password@postgres:5432/pingdaemon
+REDIS_URL=redis://redis:6379/0
+
+# Security
+SECRET_KEY=your-very-secure-secret-key-change-this
+DEBUG=false
+
+# Email Configuration (for alerts)
+RESEND_API_KEY=your-resend-api-key
+```
+
+### 3. Start the Application
+
+```bash
+# Start all services
+docker-compose up -d
+
+# View logs (optional)
+docker-compose logs -f
+```
+
+### 4. Access Your Application
+
+- **Web Interface**: http://localhost:3000
+- **API Documentation**: http://localhost:8000/docs
+
+That's it! 🎉 Your pingDaemon instance is now running and ready to monitor your websites.
+
+## 🖥️ Development Setup
+
+If you prefer to run the components separately for development:
+
+### Backend Setup
+
+```bash
 cd backend
 
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Configure environment
-cp ../.env.example .env
-# Edit .env with your database credentials
-
 # Setup database
-python manage_db.py setup
+python -m alembic upgrade head
 
-# Start backend server
-python run.py
+# Start the API server
+uvicorn app.main:app --reload --port 8000
 ```
 
-Backend will be available at: http://localhost:8000
-
-### 3. Frontend Setup
+### Frontend Setup
 
 ```bash
-# Navigate to frontend (in new terminal)
 cd frontend
 
 # Install Node.js dependencies
@@ -106,365 +108,152 @@ npm install
 npm run dev
 ```
 
-Frontend will be available at: http://localhost:3000
+### Background Services
 
-### 4. Access Application
+You'll also need PostgreSQL, Redis, and Celery workers running. See the `docker-compose.yml` file for the complete setup.
 
-- **Dashboard**: http://localhost:3000
-- **API Documentation**: http://localhost:8000/docs
-- **API Health Check**: http://localhost:8000/health
+## 📖 How to Use
 
-## 📊 Backend (FastAPI)
+### 1. Create Your Account
+- Visit http://localhost:3000
+- Click "Sign Up" and create an account with a Gmail address
+- Verify your email (check spam folder if needed)
 
-### Project Structure
+### 2. Add Your First Monitor
+- Click "Add Monitor" on the dashboard
+- Enter your website URL (e.g., `https://example.com`)
+- Choose how often to check (5-60 minutes)
+- Set failure threshold (how many failed checks before alerting)
+- Save your monitor
 
-```
-backend/
-├── app/
-│   ├── main.py              # FastAPI application
-│   ├── config.py            # Configuration settings
-│   ├── database.py          # Database connection
-│   ├── models/              # SQLAlchemy models
-│   │   ├── url_monitor.py   # URL monitoring table
-│   │   ├── health_log.py    # Health check results
-│   │   └── alert.py         # Alert notifications
-│   ├── schemas/             # Pydantic schemas
-│   │   ├── url_monitor.py   # URL validation schemas
-│   │   ├── health_log.py    # Health log schemas
-│   │   └── alert.py         # Alert schemas
-│   ├── services/            # Business logic
-│   │   ├── url_service.py   # URL management
-│   │   ├── health_service.py # Health check data
-│   │   └── alert_service.py # Alert management
-│   └── routes/              # API endpoints
-│       ├── urls.py          # URL monitoring API
-│       ├── health_logs.py   # Health logs API
-│       └── alerts.py        # Alerts API
-├── alembic/                 # Database migrations
-├── manage_db.py             # Database management CLI
-├── run.py                   # Development server
-└── requirements.txt         # Python dependencies
-```
+### 3. Watch It Work
+- Your dashboard will show the status of all monitors
+- Green = healthy, Red = down, Yellow = degraded
+- Click on any monitor to see detailed statistics and logs
+- Check the Reports page for historical data and analytics
 
-### Environment Configuration
+### 4. Get Alerts
+- You'll receive email alerts when sites go down or recover
+- Alerts include the monitor name, status change, and response details
+- No spam - you only get notified when status actually changes
 
-Create `.env` file in backend directory:
+## 🏗️ Architecture
 
-```bash
-# Database
-DATABASE_URL=postgresql://username:password@localhost:5432/pingdaemon
-
-# Redis
-REDIS_URL=redis://localhost:6379/0
-
-# Email (for alerts)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USERNAME=your-email@gmail.com
-SMTP_PASSWORD=your-app-password
-FROM_EMAIL=your-email@gmail.com
-
-# Application
-SECRET_KEY=your-secure-secret-key
-DEBUG=True
-```
-
-### Database Management
-
-```bash
-# First time setup
-python manage_db.py setup
-
-# Create migration when models change
-python manage_db.py create "Description of changes"
-
-# Apply pending migrations
-python manage_db.py migrate
-
-# Check current database version
-python manage_db.py current
-
-# View migration history
-python manage_db.py history
-
-# Rollback to previous version
-python manage_db.py downgrade
-
-# Reset database (WARNING: deletes all data)
-python manage_db.py reset
-```
-
-### API Endpoints
-
-#### URL Monitoring
-- `POST /api/urls` - Create URL monitor
-- `GET /api/urls` - List URL monitors (with pagination and search)
-- `GET /api/urls/{id}` - Get specific URL monitor
-- `PUT /api/urls/{id}` - Update URL monitor
-- `DELETE /api/urls/{id}` - Delete URL monitor
-- `GET /api/urls/{id}/stats` - Get uptime and performance statistics
-- `POST /api/urls/{id}/toggle` - Enable/disable monitoring
-
-#### Health Logs
-- `GET /api/health-logs` - List health check logs (with filtering)
-- `GET /api/health-logs/monitor/{id}` - Get logs for specific monitor
-- `GET /api/health-logs/monitor/{id}/stats` - Get health statistics
-- `GET /api/health-logs/monitor/{id}/chart` - Get chart data for visualization
-- `GET /api/health-logs/monitor/{id}/latest` - Get most recent check result
-
-#### Alerts
-- `GET /api/alerts` - List alert notifications (with filtering)
-- `POST /api/alerts` - Create new alert
-- `PUT /api/alerts/{id}` - Update alert status
-- `POST /api/alerts/{id}/mark-sent` - Mark alert as sent
-- `GET /api/alerts/pending` - Get alerts pending delivery
-- `POST /api/alerts/monitor/{id}/resolve` - Resolve all alerts for a monitor
-
-### Development Commands
-
-```bash
-# Run development server with auto-reload
-python run.py
-
-# Run specific components
-uvicorn app.main:app --reload
-celery -A app.celery_worker worker --loglevel=info
-```
-
-## 🎨 Frontend (React)
-
-### Project Structure
+pingDaemon uses a modern, scalable architecture:
 
 ```
-frontend/
-├── public/
-│   └── index.html           # HTML template
-├── src/
-│   ├── components/          # Reusable components
-│   ├── pages/              # Page components
-│   ├── App.jsx             # Main application component
-│   ├── main.jsx            # Application entry point
-│   └── index.css           # Global styles
-├── package.json            # Node.js dependencies
-├── vite.config.js          # Vite configuration
-├── tailwind.config.js      # TailwindCSS configuration
-└── postcss.config.js       # PostCSS configuration
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   React App     │◄──►│   FastAPI       │◄──►│   PostgreSQL    │
+│   (Frontend)    │    │   (Backend)     │    │   (Database)    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
+                                │
+                       ┌─────────────────┐
+                       │     Redis       │
+                       │  (Task Queue)   │
+                       └─────────────────┘
+                                │
+                       ┌─────────────────┐
+                       │     Celery      │
+                       │ (Health Checks) │
+                       └─────────────────┘
 ```
 
-### Development Commands
+## 🛠️ Technology Stack
 
-```bash
-# Install dependencies
-npm install
+### Backend
+- **FastAPI** - High-performance Python web framework
+- **PostgreSQL** - Reliable database for storing monitors and logs
+- **Celery + Redis** - Background task processing for health checks
+- **SQLAlchemy** - Database ORM with migrations
+- **Resend** - Email delivery service for alerts
 
-# Start development server
-npm run dev
+### Frontend
+- **React 18 + TypeScript** - Modern UI framework with type safety
+- **Vite** - Fast build tool and development server
+- **Tailwind CSS** - Utility-first styling
+- **Recharts** - Beautiful charts and analytics
+- **Framer Motion** - Smooth animations
 
-# Build for production
-npm run build
+## 🔧 Configuration Options
 
-# Preview production build
-npm run preview
+### Monitor Settings
+- **Check Interval**: 5, 10, 15, 30, or 60 minutes
+- **Timeout**: Maximum time to wait for response (default: 10 seconds)
+- **Failure Threshold**: Number of consecutive failures before alerting (1-10)
+- **Expected Status**: HTTP status codes that indicate success (default: 200-299)
 
-# Lint code
-npm run lint
-```
+### Email Alerts
+- Sent when a monitor goes from healthy → unhealthy
+- Sent when a monitor recovers from unhealthy → healthy
+- Include monitor details, error information, and response times
+- Automatically retry failed email deliveries
 
-### Frontend Features (Coming Soon)
+## 📊 What You Get
 
-- **Dashboard**: Overview of all monitored URLs with status indicators
-- **URL Management**: Add, edit, delete, and configure URL monitors
-- **Analytics**: Charts showing uptime, response times, and historical data
-- **Alerts**: View and manage alert notifications
-- **Real-time Updates**: Live status updates using WebSocket/polling
-- **Responsive Design**: Mobile-friendly interface
+### Dashboard
+- Real-time status overview of all monitors
+- Quick stats: total monitors, healthy/unhealthy counts, average uptime
+- Recent activity feed showing status changes
+- Quick action buttons to add monitors or run immediate checks
 
-## 🔄 Development Workflow
+### Detailed Monitoring
+- Response time tracking with historical charts
+- Uptime percentage calculations
+- Detailed error logs with timestamps
+- Status change history
 
-### Making Model Changes
+### Analytics & Reports
+- Uptime trends over time
+- Response time analysis
+- Incident tracking and patterns
+- Exportable data for further analysis
 
-1. **Modify Models**: Update files in `backend/app/models/`
-2. **Create Migration**: 
-   ```bash
-   cd backend
-   python manage_db.py create "Description of your changes"
-   ```
-3. **Review Migration**: Check generated file in `backend/alembic/versions/`
-4. **Apply Migration**: 
-   ```bash
-   python manage_db.py migrate
-   ```
-5. **Update Schemas**: Modify corresponding Pydantic schemas if needed
-6. **Update Services**: Update business logic in services layer
-7. **Test API**: Use `/docs` endpoint to test changes
+## 🚨 Troubleshooting
 
-### Adding New Features
+### Common Issues
 
-1. **Backend First**: Models → Schemas → Services → Routes
-2. **Test API**: Use FastAPI docs at `/docs`
-3. **Frontend**: Components → Pages → Integration
-4. **End-to-end Testing**: Test complete user workflows
+**"Can't connect to database"**
+- Ensure PostgreSQL is running (`docker-compose ps`)
+- Check your `DATABASE_URL` in `.env`
+- Try: `docker-compose restart postgres`
 
-## 🚀 Production Deployment
+**"No emails being sent"**
+- Verify your `RESEND_API_KEY` is correct
+- Check the email queue in your dashboard
+- Ensure Celery worker is running
 
-### Backend Deployment
+**"Frontend won't load"**
+- Check that both frontend and backend are running
+- Verify ports 3000 and 8000 are not in use by other apps
+- Try clearing browser cache
 
-1. **Environment Setup**:
-   ```bash
-   DEBUG=False
-   SECRET_KEY=strong-production-secret
-   DATABASE_URL=production-database-url
-   ```
+**"Health checks not running"**
+- Ensure Celery beat scheduler is running
+- Check Redis connection
+- Verify monitors are enabled
 
-2. **Database Setup**:
-   ```bash
-   python manage_db.py setup
-   ```
+### Getting Help
 
-3. **Run with Production Server**:
-   ```bash
-   uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 4
-   ```
+1. Check the container logs: `docker-compose logs -f [service-name]`
+2. Verify all services are healthy: `docker-compose ps`
+3. Check the API health endpoint: http://localhost:8000/health
 
-4. **Background Tasks**:
-   ```bash
-   celery -A app.celery_worker worker --loglevel=info
-   celery -A app.celery_worker beat --loglevel=info
-   ```
+## 🛡️ Security Notes
 
-### Frontend Deployment
+- Uses JWT tokens for authentication
+- Passwords are securely hashed with bcrypt
+- All API endpoints require authentication
+- Environment variables for sensitive configuration
+- CORS properly configured for frontend access
 
-1. **Build Production Assets**:
-   ```bash
-   cd frontend
-   npm run build
-   ```
+## 🌟 Why pingDaemon?
 
-2. **Serve Static Files**: Use nginx, Apache, or CDN
-
-3. **Environment Configuration**: Update API base URL for production
-
-## 🐛 Troubleshooting
-
-### Database Issues
-- **Connection Failed**: Check PostgreSQL is running and DATABASE_URL is correct
-- **Migration Errors**: Run `python manage_db.py current` to check status
-- **Reset Database**: Use `python manage_db.py reset` (WARNING: deletes all data)
-
-### Backend Issues
-- **Import Errors**: Ensure all dependencies are installed with `pip install -r requirements.txt`
-- **Port Conflicts**: Check if port 8000 is already in use
-- **Redis Connection**: Verify Redis is running on port 6379
-
-### Frontend Issues
-- **Build Failures**: Delete `node_modules` and run `npm install` again
-- **API Connection**: Check backend is running on port 8000
-- **Styling Issues**: Ensure TailwindCSS is compiled correctly
-
-## 📋 API Documentation
-
-Interactive API documentation is available at:
-- **Swagger UI**: http://localhost:8000/docs
-- **ReDoc**: http://localhost:8000/redoc
-
-### Authentication
-*Authentication system will be implemented in future phases*
-
-### Rate Limiting
-*Rate limiting will be implemented in future phases*
-
-## 🧪 Testing
-
-### Backend Testing
-```bash
-cd backend
-pytest  # (when test suite is implemented)
-```
-
-### Frontend Testing
-```bash
-cd frontend
-npm test  # (when test suite is implemented)
-```
-
-### API Testing
-Use the interactive documentation at `/docs` to test all endpoints.
-
-## 📈 Monitoring and Observability
-
-### Health Checks
-- **API Health**: `GET /health`
-- **Database Status**: Included in health check response
-- **Metrics**: Response time headers (`X-Process-Time`)
-
-### Logging
-- **Backend**: Structured logging with configurable levels
-- **Database**: Query logging in debug mode
-- **Celery**: Task execution logging
-
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes following the established patterns
-4. Run tests and ensure they pass
-5. Commit your changes (`git commit -m 'Add amazing feature'`)
-6. Push to the branch (`git push origin feature/amazing-feature`)
-7. Open a Pull Request
-
-### Development Guidelines
-- Follow existing code style and patterns
-- Add tests for new functionality
-- Update documentation for API changes
-- Use conventional commit messages
-
-## 📝 License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## 🔮 Roadmap
-
-### Phase 3: Background Processing
-- [ ] Celery worker setup for health checks
-- [ ] Periodic URL monitoring tasks
-- [ ] Health check result processing
-
-### Phase 4: Alert System
-- [ ] Email notification system
-- [ ] Alert cooldown and rate limiting
-- [ ] Notification templates
-
-### Phase 5: Frontend Development
-- [ ] Dashboard with real-time status
-- [ ] URL management interface
-- [ ] Analytics and charts
-- [ ] Alert management UI
-
-### Phase 6: Advanced Features
-- [ ] User authentication and authorization
-- [ ] Multi-tenant support
-- [ ] Advanced alert rules
-- [ ] Webhook notifications
-- [ ] API rate limiting
-
-### Phase 7: Production Features
-- [ ] Docker containerization
-- [ ] CI/CD pipeline
-- [ ] Performance monitoring
-- [ ] Backup and disaster recovery
-
-### Phase 8: Enterprise Features
-- [ ] LDAP/SSO integration
-- [ ] Advanced analytics
-- [ ] Custom dashboards
-- [ ] API quotas and billing
-
-## 📞 Support
-
-- **Documentation**: Check this README and API docs at `/docs`
-- **Issues**: Create an issue on GitHub for bug reports
-- **Discussions**: Use GitHub Discussions for questions and ideas
+- **Simple Setup**: Get monitoring in minutes, not hours
+- **No Vendor Lock-in**: Self-hosted solution you control
+- **Cost Effective**: Monitor unlimited sites without per-site fees
+- **Reliable**: Built with production-grade technologies
+- **Extensible**: Open source and easy to customize
 
 ---
 
-**Built with ❤️ for reliable web monitoring**
+**Ready to start monitoring?** Run `docker-compose up -d` and visit http://localhost:3000 to get started! 🚀
