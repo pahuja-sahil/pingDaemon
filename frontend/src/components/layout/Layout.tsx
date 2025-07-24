@@ -1,6 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -20,7 +19,6 @@ const Layout = ({ children, showHeader = true, showSidebar = true }: LayoutProps
   const [isMobile, setIsMobile] = useState(false);
   const { isAuthenticated, logout } = useAuth();
   const { toast } = useToast();
-  const navigate = useNavigate();
 
   // Check screen size
   useEffect(() => {
