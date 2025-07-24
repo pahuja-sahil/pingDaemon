@@ -2,12 +2,9 @@
 
 A comprehensive website monitoring system that performs automated health checks and sends instant alerts when your websites go down. Built with FastAPI backend and React frontend.
 
-![Status](https://img.shields.io/badge/status-production%20ready-green)
-![License](https://img.shields.io/badge/license-MIT-blue)
-
 ## ✨ What is pingDaemon?
 
-pingDaemon is a **production-ready website monitoring solution** that continuously watches your websites and services, alerting you immediately when problems occur. Whether you're monitoring a personal blog or critical business applications, pingDaemon ensures you're the first to know when something goes wrong.
+pingDaemon is a **website monitoring solution** that continuously watches your websites and services, alerting you immediately when problems occur. Whether you're monitoring a personal blog or critical business applications, pingDaemon ensures you're the first to know when something goes wrong.
 
 ### Key Features
 
@@ -89,9 +86,6 @@ cd backend
 # Install Python dependencies
 pip install -r requirements.txt
 
-# Setup database
-python -m alembic upgrade head
-
 # Start the API server
 uvicorn app.main:app --reload --port 8000
 ```
@@ -117,7 +111,6 @@ You'll also need PostgreSQL, Redis, and Celery workers running. See the `docker-
 ### 1. Create Your Account
 - Visit http://localhost:3000
 - Click "Sign Up" and create an account with a Gmail address
-- Verify your email (check spam folder if needed)
 
 ### 2. Add Your First Monitor
 - Click "Add Monitor" on the dashboard
@@ -128,11 +121,17 @@ You'll also need PostgreSQL, Redis, and Celery workers running. See the `docker-
 
 ### 3. Watch It Work
 - Your dashboard will show the status of all monitors
-- Green = healthy, Red = down, Yellow = degraded
+- Green = healthy, Red = down
 - Click on any monitor to see detailed statistics and logs
-- Check the Reports page for historical data and analytics
 
-### 4. Get Alerts
+### 4. View Reports & Analytics
+- Navigate to the Reports page to see comprehensive analytics
+- View uptime history charts and response time trends
+- Track incidents and performance patterns over time
+- Analyze data by day, week, or custom date ranges
+- Export data for further analysis or reporting
+
+### 5. Get Alerts
 - You'll receive email alerts when sites go down or recover
 - Alerts include the monitor name, status change, and response details
 - No spam - you only get notified when status actually changes
@@ -207,52 +206,6 @@ pingDaemon uses a modern, scalable architecture:
 - Response time analysis
 - Incident tracking and patterns
 - Exportable data for further analysis
-
-## 🚨 Troubleshooting
-
-### Common Issues
-
-**"Can't connect to database"**
-- Ensure PostgreSQL is running (`docker-compose ps`)
-- Check your `DATABASE_URL` in `.env`
-- Try: `docker-compose restart postgres`
-
-**"No emails being sent"**
-- Verify your `RESEND_API_KEY` is correct
-- Check the email queue in your dashboard
-- Ensure Celery worker is running
-
-**"Frontend won't load"**
-- Check that both frontend and backend are running
-- Verify ports 3000 and 8000 are not in use by other apps
-- Try clearing browser cache
-
-**"Health checks not running"**
-- Ensure Celery beat scheduler is running
-- Check Redis connection
-- Verify monitors are enabled
-
-### Getting Help
-
-1. Check the container logs: `docker-compose logs -f [service-name]`
-2. Verify all services are healthy: `docker-compose ps`
-3. Check the API health endpoint: http://localhost:8000/health
-
-## 🛡️ Security Notes
-
-- Uses JWT tokens for authentication
-- Passwords are securely hashed with bcrypt
-- All API endpoints require authentication
-- Environment variables for sensitive configuration
-- CORS properly configured for frontend access
-
-## 🌟 Why pingDaemon?
-
-- **Simple Setup**: Get monitoring in minutes, not hours
-- **No Vendor Lock-in**: Self-hosted solution you control
-- **Cost Effective**: Monitor unlimited sites without per-site fees
-- **Reliable**: Built with production-grade technologies
-- **Extensible**: Open source and easy to customize
 
 ---
 
