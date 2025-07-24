@@ -36,6 +36,10 @@ api.interceptors.request.use(
       token = sessionStorage.getItem('pingdaemon-token');
     }
     
+    // List of endpoints that don't require authentication
+    const publicEndpoints = ['/auth/register', '/auth/login', '/auth/forgot-password', '/auth/reset-password'];
+    const isPublicEndpoint = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
+    
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
       console.log('🔑 API Request with token:', { 
@@ -43,7 +47,7 @@ api.interceptors.request.use(
         hasToken: !!token, 
         tokenStart: token.substring(0, 10) + '...' 
       });
-    } else {
+    } else if (!isPublicEndpoint) {
       console.log('❌ API Request WITHOUT token:', { url: config.url });
     }
     return config;
