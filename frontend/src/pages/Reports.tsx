@@ -437,7 +437,7 @@ const Reports = () => {
                       5min
                     </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">
-                      Check Frequency
+                      Min Time Interval
                     </div>
                   </div>
                 </div>

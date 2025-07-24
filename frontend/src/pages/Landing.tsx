@@ -378,7 +378,7 @@ const Landing = () => {
 
           <div className="border-t border-gray-200/50 dark:border-gray-700/50 mt-8 pt-8">
             <p className="text-center text-gray-500 dark:text-gray-400 text-sm">
-              © 2024 pingDaemon. All rights reserved.
+              © 2025 pingDaemon. All rights reserved.
             </p>
           </div>
         </div>
