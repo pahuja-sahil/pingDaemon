@@ -13,6 +13,7 @@ from .auth import get_current_user
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
+@router.post("", response_model=JobResponse)
 @router.post("/", response_model=JobResponse)
 async def create_job(
     job_data: JobCreate,
@@ -22,6 +23,7 @@ async def create_job(
     """Create a new monitoring job"""
     return JobService.create_job(db, job_data, current_user)
 
+@router.get("", response_model=List[JobResponse])
 @router.get("/", response_model=List[JobResponse])
 async def get_user_jobs(
     page: int = Query(1, ge=1, description="Page number (starts from 1)"),

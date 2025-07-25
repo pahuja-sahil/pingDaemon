@@ -9,7 +9,7 @@ from ..services.auth_service import AuthService
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
 # OAuth2 scheme for token authentication
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
 
 @router.post("/register", response_model=UserResponse)
 async def register(
