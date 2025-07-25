@@ -66,7 +66,7 @@ class ResendClient:
         
         try:
             params = {
-                "from": "pingDaemon Alert System <alerts@resend.dev>",
+                "from": "pingDaemon Alert System <onboarding@resend.dev>",
                 "to": [recipient_email],
                 "subject": subject,
                 "html": html_content,
@@ -99,7 +99,7 @@ class ResendClient:
         recipient_email: str,
         recipient_name: str,
         reset_token: str,
-        base_url: str = "http://localhost:3000"
+        base_url: str = "https://ping-daemon.vercel.app"
     ) -> Dict[str, Any]:
         """
         Send password reset email
@@ -191,7 +191,7 @@ class ResendClient:
         
         try:
             params = {
-                "from": "pingDaemon Security <security@resend.dev>",
+                "from": "pingDaemon Security <onboarding@resend.dev>",
                 "to": [recipient_email],
                 "subject": subject,
                 "html": html_content,
