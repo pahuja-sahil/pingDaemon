@@ -6,8 +6,7 @@ from .routes import auth, jobs, reports
 
 app = FastAPI(
     title="pingDaemon", 
-    description="Uptime Monitor - Health Check System",
-    redirect_slashes=False
+    description="Uptime Monitor - Health Check System"
 )
 
 # Configure CORS
