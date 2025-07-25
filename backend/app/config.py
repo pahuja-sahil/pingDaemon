@@ -28,6 +28,7 @@ else:
         
         DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
         CORS_ORIGINS: list = ["http://localhost:3000"]
+
         
         class Config:
             case_sensitive = True
