@@ -40,7 +40,7 @@ def process_email_batch(self, batch_size: int = 2):
                 
                 # Prepare email parameters for Resend
                 params = {
-                    "from": "pingDaemon Alert System <alerts@resend.dev>",
+                    "from": "pingDaemon Alert System <onboarding@resend.dev>",
                     "to": [email.recipient_email],
                     "subject": email.subject,
                     "html": email.html_content,
