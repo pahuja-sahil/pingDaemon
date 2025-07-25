@@ -42,7 +42,14 @@ class Settings:
     
     # App configuration
     DEBUG = os.getenv("DEBUG", "False").lower() == "true"
-    CORS_ORIGINS = ["https://*.vercel.app", "http://localhost:3000", "https://localhost:3000"]
+    CORS_ORIGINS = [
+        "https://ping-daemon.vercel.app",
+        "https://pingdaemon.vercel.app", 
+        "http://localhost:3000",
+        "https://localhost:3000",
+        "http://localhost:5173",  # Vite dev server
+        "https://localhost:5173"
+    ]
     
     class Config:
         case_sensitive = True
