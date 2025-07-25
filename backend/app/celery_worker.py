@@ -2,11 +2,20 @@
 from celery import Celery
 from .config import settings
 
+# Handle Upstash Redis URL format for Celery
+if hasattr(settings, 'UPSTASH_REDIS_REST_URL') and settings.UPSTASH_REDIS_REST_URL:
+    # Convert Upstash HTTP URL to Redis protocol
+    redis_host = settings.UPSTASH_REDIS_REST_URL.replace('https://', '').replace('/', '')
+    broker_url = f"redis://default:{settings.UPSTASH_REDIS_REST_TOKEN}@{redis_host}:6379"
+else:
+    # Fallback to regular Redis URL
+    broker_url = settings.REDIS_URL
+
 # Create Celery app instance
 celery_app = Celery(
     "pingdaemon",
-    broker=settings.REDIS_URL,
-    backend=settings.REDIS_URL,
+    broker=broker_url,
+    backend=broker_url,
     include=[
         "app.workers.checker",
         "app.workers.mailer",

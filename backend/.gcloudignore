@@ -1,0 +1,11 @@
+@"
+# Ignore everything except what we need
+__pycache__/
+*.pyc
+.env
+.pytest_cache/
+.coverage
+*.db
+*.sqlite3
+# Dockerfile - REMOVED THIS LINE
+"@ | Out-File -FilePath .gcloudignore -Encoding UTF8

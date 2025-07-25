@@ -19,9 +19,10 @@ COPY . .
 RUN useradd -m -u 1001 app && chown -R app:app /app
 USER app
 
-# Cloud Run uses PORT environment variable
+# For Celery worker
+ENV C_FORCE_ROOT=1
 ENV PORT=8080
 EXPOSE 8080
 
-# Run the application
-CMD exec uvicorn app.main:app --host 0.0.0.0 --port $PORT
+# Run the health check server and celery worker
+CMD python healthcheck_worker.py
