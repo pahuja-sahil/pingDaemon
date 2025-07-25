@@ -42,11 +42,6 @@ api.interceptors.request.use(
     
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔑 API Request with token:', { 
-        url: config.url, 
-        hasToken: !!token, 
-        tokenStart: token.substring(0, 10) + '...' 
-      });
     } else if (!isPublicEndpoint) {
       console.log('❌ API Request WITHOUT token:', { url: config.url });
     }

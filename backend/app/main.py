@@ -4,7 +4,11 @@ from .config import settings
 from .database import create_tables
 from .routes import auth, jobs, reports
 
-app = FastAPI(title="pingDaemon", description="Uptime Monitor - Health Check System")
+app = FastAPI(
+    title="pingDaemon", 
+    description="Uptime Monitor - Health Check System",
+    redirect_slashes=False
+)
 
 # Configure CORS
 app.add_middleware(
