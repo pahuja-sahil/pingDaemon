@@ -11,7 +11,7 @@ class Settings:
     DB_PASS = os.getenv("DB_PASS", "Shockingstar15")
     DB_NAME = os.getenv("DB_NAME", "pingDaemon")
     
-    # Cloud SQL Connection - this is the key fix!
+    # Cloud SQL Connection
     CLOUD_SQL_CONNECTION_NAME = os.getenv("CLOUD_SQL_CONNECTION_NAME")
     
     # Build DATABASE_URL based on environment
@@ -22,14 +22,13 @@ class Settings:
         # Local development
         DATABASE_URL = os.getenv("DATABASE_URL", f"postgresql://{DB_USER}:{DB_PASS}@localhost:5432/{DB_NAME}")
     
-    # Upstash Redis configuration
-    UPSTASH_REDIS_REST_URL = os.getenv("UPSTASH_REDIS_REST_URL")
-    UPSTASH_REDIS_REST_TOKEN = os.getenv("UPSTASH_REDIS_REST_TOKEN")
-    
-    # For Celery compatibility
-    if UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN:
-        REDIS_URL = f"redis://default:{UPSTASH_REDIS_REST_TOKEN}@{UPSTASH_REDIS_REST_URL.replace('https://', '').replace('/', '')}:6379"
+    # Redis configuration - Simplified for Memorystore
+    REDIS_HOST = os.getenv("REDIS_HOST")
+    if REDIS_HOST:
+        # Using Google Cloud Memorystore
+        REDIS_URL = f"redis://{REDIS_HOST}:6379/0"
     else:
+        # Local development fallback
         REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
     
     # JWT configuration
