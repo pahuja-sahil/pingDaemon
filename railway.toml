@@ -2,18 +2,16 @@
 services = [
   {
     name            = "pingDaemon"
-    path            = "."                   # root of your repo
+    path            = "api"                   # root of your repo
     dockerfile      = "Dockerfile.api"      # picks up your API Dockerfile
-    startCommand    = "./start-api.sh"
     port            = 8080
     healthcheckPath = "/health"
     restartPolicyType = "ON_FAILURE"
   },
   {
     name            = "pingdaemon-worker"
-    path            = "."                   # same root, but…
+    path            = "worker"                   # same root, but…
     dockerfile      = "Dockerfile.worker"   # …uses your worker Dockerfile
-    startCommand    = "./start-worker.sh"
     restartPolicyType = "ON_FAILURE"
   }
 ]
