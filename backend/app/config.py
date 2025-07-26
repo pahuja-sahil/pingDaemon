@@ -25,7 +25,13 @@ class Settings:
     
     # App configuration
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
-    CORS_ORIGINS: list = ["http://localhost:3000"]
+    ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
+    
+    # CORS configuration - dynamic based on environment
+    @property
+    def CORS_ORIGINS(self) -> list:
+        cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+        return [origin.strip() for origin in cors_origins.split(",")]
     
     class Config:
         case_sensitive = True

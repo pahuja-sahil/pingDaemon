@@ -1,0 +1,41 @@
+# Development files
+.env
+.env.local
+.env.development
+*.pyc
+__pycache__/
+.pytest_cache/
+.coverage
+.venv/
+venv/
+
+# Git
+.git/
+.gitignore
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Frontend
+frontend/
+node_modules/
+
+# Old config files
+docker-compose.yml
+fly.*.toml
+render.yaml
