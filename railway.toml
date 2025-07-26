@@ -1,18 +1,18 @@
 services = [
   {
-    name            = "pingDaemon"
-    path            = "api"                      # <---- CHANGE this
-    dockerfile      = "Dockerfile.api"           # fine if it stays .api
-    startCommand    = "./start-api.sh"
-    port            = 8080
-    healthcheckPath = "/health"
+    name = "pingDaemon",
+    path = "api",
+    dockerfile = "Dockerfile.api",
+    startCommand = "./start-api.sh",
+    port = 8080,
+    healthcheckPath = "/health",
     restartPolicyType = "ON_FAILURE"
   },
   {
-    name            = "pingdaemon-worker"
-    path            = "worker"                   # <---- CHANGE this
-    dockerfile      = "Dockerfile.worker"        # fine if it stays .worker
-    startCommand    = "celery -A app.celery_worker worker --loglevel=info --concurrency=2"
+    name = "pingdaemon-worker",
+    path = "worker",
+    dockerfile = "Dockerfile.worker",
+    startCommand = "celery -A app.celery_worker worker --loglevel=info --concurrency=2",
     restartPolicyType = "ON_FAILURE"
   }
 ]
