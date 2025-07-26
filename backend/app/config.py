@@ -13,7 +13,7 @@ class Settings:
     )
     
     # Redis configuration for Celery
-    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
     
     # JWT configuration
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
