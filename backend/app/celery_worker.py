@@ -5,8 +5,8 @@ from .config import settings
 # Create Celery app instance
 celery_app = Celery(
     "pingdaemon",
-    broker=settings.REDIS_URL,
-    backend=settings.REDIS_URL,
+    broker=settings.REDIS_URL_FIXED,
+    backend=settings.REDIS_URL_FIXED,
     include=[
         "app.workers.checker",
         "app.workers.mailer",

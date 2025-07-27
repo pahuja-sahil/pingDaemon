@@ -15,6 +15,15 @@ class Settings:
     # Redis configuration for Celery
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
     
+    @property
+    def REDIS_URL_FIXED(self) -> str:
+        """Fix Redis URL format for cloud providers like Upstash"""
+        redis_url = self.REDIS_URL
+        # Fix double slash issue in Upstash URLs
+        if "://" in redis_url and "//" in redis_url[redis_url.index("://") + 3:]:
+            redis_url = redis_url.replace("//", "/", redis_url.count("//") - 1)
+        return redis_url
+    
     # JWT configuration
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ALGORITHM: str = "HS256"

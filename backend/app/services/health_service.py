@@ -164,28 +164,60 @@ class HealthService:
         # Update job status (this also sets previous_status in the job)
         updated_job = HealthService.update_job_status(db, job, check_result['is_healthy'])
         
-        # Check for status change and queue email if needed
+        # Check for status change and send email if needed
         alert_triggered = None
         if previous_status != updated_job.current_status:
             try:
                 # Get job owner
                 user = db.query(User).filter(User.id == job.user_id).first()
                 if user:
-                    # Queue status change email
-                    email_queue = EmailQueueService.queue_status_change_alert(
-                        db=db,
-                        job=updated_job,
-                        user=user,
-                        previous_status=previous_status,
-                        current_status=updated_job.current_status,
-                        error_message=check_result.get('error_message')
-                    )
-                    alert_triggered = {
-                        'email_queue_id': email_queue.id,
-                        'status_change': f"{previous_status} → {updated_job.current_status}"
-                    }
+                    # Try to queue email first (preferred method)
+                    try:
+                        email_queue = EmailQueueService.queue_status_change_alert(
+                            db=db,
+                            job=updated_job,
+                            user=user,
+                            previous_status=previous_status,
+                            current_status=updated_job.current_status,
+                            error_message=check_result.get('error_message')
+                        )
+                        alert_triggered = {
+                            'method': 'queued',
+                            'email_queue_id': email_queue.id,
+                            'status_change': f"{previous_status} → {updated_job.current_status}"
+                        }
+                        logger.info(f"✅ CELERY WORKING: Status change email queued for job {job.id} ({previous_status} → {updated_job.current_status})")
+                    except Exception as queue_error:
+                        # Fallback to direct email sending when queue fails
+                        logger.warning(f"❌ CELERY FAILED: Using direct send fallback for job {job.id}. Error: {str(queue_error)}")
+                        from ..email.resend_client import ResendClient
+                        
+                        resend_client = ResendClient()
+                        email_result = resend_client.send_status_change_email(
+                            recipient_email=user.email,
+                            recipient_name=user.email,
+                            job_url=updated_job.url,
+                            previous_status=previous_status,
+                            current_status=updated_job.current_status,
+                            error_message=check_result.get('error_message'),
+                            job_interval=updated_job.interval,
+                            failure_threshold=updated_job.failure_threshold
+                        )
+                        
+                        alert_triggered = {
+                            'method': 'direct',
+                            'email_success': email_result['success'],
+                            'status_change': f"{previous_status} → {updated_job.current_status}",
+                            'fallback_reason': str(queue_error)
+                        }
+                        
+                        if email_result['success']:
+                            logger.info(f"📧 DIRECT EMAIL SUCCESS: Status change email sent directly for job {job.id} ({previous_status} → {updated_job.current_status})")
+                        else:
+                            logger.error(f"💥 TOTAL FAILURE: Both queue and direct email failed for job {job.id}: {email_result.get('error')}")
+                            
             except Exception as e:
-                logger.error(f"Failed to queue status change alert: {str(e)}")
+                logger.error(f"Failed to send status change alert: {str(e)}")
                 alert_triggered = {'error': str(e)}
         
         # Check if alert should be triggered (legacy compatibility)

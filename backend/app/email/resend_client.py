@@ -214,3 +214,129 @@ class ResendClient:
                 'error': str(e),
                 'status': 'failed'
             }
+    
+    def send_status_change_email(
+        self,
+        recipient_email: str,
+        recipient_name: str,
+        job_url: str,
+        previous_status: str,
+        current_status: str,
+        error_message: str = None,
+        job_interval: int = 10,
+        failure_threshold: int = 3
+    ) -> Dict[str, Any]:
+        """
+        Send status change email directly (for fallback when Celery is unavailable)
+        
+        Args:
+            recipient_email: Email address to send alert to
+            recipient_name: Name of recipient
+            job_url: URL that changed status
+            previous_status: Previous status
+            current_status: Current status
+            error_message: Error message from health check
+            job_interval: Check interval in minutes
+            failure_threshold: Failure threshold
+            
+        Returns:
+            Dict with send result
+        """
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
+        
+        # Determine email type and content
+        if previous_status in ['healthy', 'unknown'] and current_status == 'unhealthy':
+            # Service went down
+            subject = f"🚨 Service Down Alert: {job_url}"
+            status_text = "DOWN"
+            status_emoji = "🔴"
+        elif previous_status == 'unhealthy' and current_status == 'healthy':
+            # Service recovered  
+            subject = f"✅ Service Restored: {job_url}"
+            status_text = "RESTORED"
+            status_emoji = "🟢"
+        elif previous_status == 'unknown' and current_status == 'healthy':
+            # Service came online
+            subject = f"✅ Service Online: {job_url}"
+            status_text = "ONLINE"
+            status_emoji = "🟢"
+        else:
+            # Generic status change
+            subject = f"📊 Status Change: {job_url}"
+            status_text = f"{previous_status.upper()} → {current_status.upper()}"
+            status_emoji = "📊"
+        
+        # HTML email content
+        html_content = f"""
+        <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
+                <h1 style="margin: 0; font-size: 24px;">{status_emoji} Status Change Alert</h1>
+                <p style="margin: 10px 0 0; opacity: 0.9;">pingDaemon Monitoring System</p>
+            </div>
+            
+            <div style="background: white; padding: 40px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #667eea; margin: 0; font-size: 20px;">{status_text}</h2>
+                </div>
+                
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                    <p style="margin: 0 0 10px;"><strong>URL:</strong> <a href="{job_url}" style="color: #667eea;">{job_url}</a></p>
+                    <p style="margin: 0 0 10px;"><strong>Previous Status:</strong> {previous_status.title()}</p>
+                    <p style="margin: 0 0 10px;"><strong>Current Status:</strong> {current_status.title()}</p>
+                    <p style="margin: 0 0 10px;"><strong>Check Interval:</strong> Every {job_interval} minutes</p>
+                    <p style="margin: 0;"><strong>Failure Threshold:</strong> {failure_threshold} consecutive failures</p>
+                </div>
+                
+                {f'<div style="background: #fee; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f56565;"><p style="margin: 0; color: #c53030;"><strong>Error Details:</strong> {error_message}</p></div>' if error_message else ''}
+                
+                <p style="text-align: center; margin: 30px 0 0; color: #6c757d; font-size: 14px;">
+                    Alert generated at {timestamp}<br>
+                    <a href="http://localhost:3000/monitors" style="color: #667eea;">View Dashboard</a>
+                </p>
+            </div>
+        </div>
+        """
+        
+        # Plain text email content
+        text_content = f"""
+        Status Change Alert - pingDaemon
+        
+        {status_text}
+        
+        URL: {job_url}
+        Previous Status: {previous_status.title()}
+        Current Status: {current_status.title()}
+        Check Interval: Every {job_interval} minutes
+        Failure Threshold: {failure_threshold} consecutive failures
+        
+        {f'Error Details: {error_message}' if error_message else ''}
+        
+        Alert generated at {timestamp}
+        View Dashboard: http://localhost:3000/monitors
+        """
+        
+        try:
+            params = {
+                "from": "pingDaemon Alert System <alerts@resend.dev>",
+                "to": [recipient_email],
+                "subject": subject,
+                "html": html_content,
+                "text": text_content,
+            }
+            
+            email = resend.Emails.send(params)
+            
+            logger.info(f"Status change email sent successfully to {recipient_email}: {status_text}")
+            return {
+                'success': True,
+                'message_id': email.get('id'),
+                'status': 'sent'
+            }
+                
+        except Exception as e:
+            logger.error(f"Exception sending status change email: {str(e)}")
+            return {
+                'success': False,
+                'error': str(e),
+                'status': 'failed'
+            }
