@@ -66,7 +66,7 @@ class ResendClient:
         
         try:
             params = {
-                "from": "pingDaemon Alert System <alerts@resend.dev>",
+                "from": "pingDaemon Alert System <onboarding@resend.dev>",
                 "to": [recipient_email],
                 "subject": subject,
                 "html": html_content,
@@ -83,13 +83,16 @@ class ResendClient:
             }
                 
         except Exception as e:
-            logger.error(f"Exception sending email: {str(e)}")
+            error_msg = str(e) if str(e) else f"{type(e).__name__}: Unknown error"
+            logger.error(f"Exception sending alert email: {error_msg}")
             logger.error(f"Exception type: {type(e).__name__}")
-            # Also log the full params for debugging
-            logger.debug(f"Email params were: {params}")
+            logger.error(f"Email params: {params}")
+            if hasattr(e, 'response'):
+                logger.error(f"Response status: {getattr(e.response, 'status_code', 'N/A')}")
+                logger.error(f"Response text: {getattr(e.response, 'text', 'N/A')}")
             return {
                 'success': False,
-                'error': str(e) if str(e) else f"{type(e).__name__}: Unknown error",
+                'error': error_msg,
                 'error_type': type(e).__name__,
                 'status': 'failed'
             }
@@ -193,7 +196,7 @@ class ResendClient:
         
         try:
             params = {
-                "from": "pingDaemon Security <security@resend.dev>",
+                "from": "pingDaemon Security <onboarding@resend.dev>",
                 "to": [recipient_email],
                 "subject": subject,
                 "html": html_content,
@@ -319,7 +322,7 @@ class ResendClient:
         
         try:
             params = {
-                "from": "pingDaemon Alert System <alerts@resend.dev>",
+                "from": "pingDaemon Alert System <onboarding@resend.dev>",
                 "to": [recipient_email],
                 "subject": subject,
                 "html": html_content,

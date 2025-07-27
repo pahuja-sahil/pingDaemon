@@ -40,7 +40,7 @@ def process_email_batch(self, batch_size: int = 2):
                 
                 # Prepare email parameters for Resend
                 params = {
-                    "from": "pingDaemon Alert System <alerts@resend.dev>",
+                    "from": "pingDaemon Alert System <onboarding@resend.dev>",
                     "to": [email.recipient_email],
                     "subject": email.subject,
                     "html": email.html_content,
@@ -99,10 +99,16 @@ def _add_direct_send_method_to_resend_client():
                 'status': 'sent'
             }
         except Exception as e:
-            logger.error(f"Exception sending email via Resend: {str(e)}")
+            error_msg = str(e) if str(e) else f"{type(e).__name__}: Unknown error"
+            logger.error(f"Exception sending email via Resend: {error_msg}")
+            logger.error(f"Exception type: {type(e).__name__}")
+            logger.error(f"Email params: {params}")
+            if hasattr(e, 'response'):
+                logger.error(f"Response status: {getattr(e.response, 'status_code', 'N/A')}")
+                logger.error(f"Response text: {getattr(e.response, 'text', 'N/A')}")
             return {
                 'success': False,
-                'error': str(e) if str(e) else f"{type(e).__name__}: Unknown error",
+                'error': error_msg,
                 'error_type': type(e).__name__,
                 'status': 'failed'
             }
