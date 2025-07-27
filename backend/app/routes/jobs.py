@@ -13,6 +13,8 @@ from .auth import get_current_user
 
 router = APIRouter(prefix="/jobs", tags=["jobs"])
 
+# Handle both /jobs and /jobs/ for POST create job
+@router.post("", response_model=JobResponse)
 @router.post("/", response_model=JobResponse)
 async def create_job(
     job_data: JobCreate,
@@ -22,6 +24,8 @@ async def create_job(
     """Create a new monitoring job"""
     return JobService.create_job(db, job_data, current_user)
 
+# Handle both /jobs and /jobs/ for GET user jobs
+@router.get("", response_model=List[JobResponse])
 @router.get("/", response_model=List[JobResponse])
 async def get_user_jobs(
     page: int = Query(1, ge=1, description="Page number (starts from 1)"),
@@ -110,7 +114,6 @@ async def perform_direct_health_check(
         "checked_at": result['check_result'].get('timestamp', 'now')
     }
 
-
 @router.get("/tasks/{task_id}/status", response_model=dict)
 async def get_task_status(
     task_id: str,
@@ -119,4 +122,3 @@ async def get_task_status(
     """Get the status of a scheduled health check task"""
     result = SchedulerService.get_task_status(task_id)
     return result
-
