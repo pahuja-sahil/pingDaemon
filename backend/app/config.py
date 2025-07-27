@@ -19,11 +19,17 @@ class Settings:
     def REDIS_URL_FIXED(self) -> str:
         """Fix Redis URL format for cloud providers like Upstash"""
         redis_url = self.REDIS_URL
-        # Fix double slash issue in Upstash URLs - remove trailing //
-        if redis_url.endswith("//"):
-            redis_url = redis_url[:-1]  # Remove one trailing slash
+        print(f"🔍 Processing URL: {redis_url}")
+        
+        # Remove any trailing slashes first
+        redis_url = redis_url.rstrip('/')
+        
+        # Ensure it ends with /0 (database 0)
+        if not redis_url.endswith('/0'):
+            redis_url += '/0'
+        
+        print(f"🔍 Final URL: {redis_url}")
         return redis_url
-    
     # JWT configuration
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ALGORITHM: str = "HS256"
