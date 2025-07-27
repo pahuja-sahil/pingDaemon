@@ -45,7 +45,7 @@ class ReportsService:
                 total_count = len(health_checks)
                 uptime_percentage = round((healthy_count / total_count) * 100, 1)
             else:
-                uptime_percentage = 100.0  # No data means no issues
+                uptime_percentage = 0.0  # No data means no monitoring yet
             
             results.append(UptimeHistoryItem(
                 date=current_date.strftime("%Y-%m-%d"),
@@ -138,7 +138,7 @@ class ReportsService:
         user_jobs = db.query(Job).filter(Job.user_id == user.id).all()
         if not user_jobs:
             return PerformanceMetrics(
-                avgUptime="100.0%",
+                avgUptime="0.0%",
                 avgResponseTime="0ms",
                 totalIncidents=0,
                 checksPerformed=0
@@ -160,7 +160,7 @@ class ReportsService:
         
         if not health_checks:
             return PerformanceMetrics(
-                avgUptime="100.0%",
+                avgUptime="0.0%",
                 avgResponseTime="0ms",
                 totalIncidents=0,
                 checksPerformed=0

@@ -2,6 +2,7 @@ import logging
 import resend
 from typing import Dict, Any, Optional
 from datetime import datetime
+import html
 from ..config import settings
 
 logger = logging.getLogger(__name__)
@@ -285,14 +286,14 @@ class ResendClient:
                 </div>
                 
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-                    <p style="margin: 0 0 10px;"><strong>URL:</strong> <a href="{job_url}" style="color: #667eea;">{job_url}</a></p>
+                    <p style="margin: 0 0 10px;"><strong>URL:</strong> <a href="{html.escape(job_url)}" style="color: #667eea;">{html.escape(job_url)}</a></p>
                     <p style="margin: 0 0 10px;"><strong>Previous Status:</strong> {previous_status.title()}</p>
                     <p style="margin: 0 0 10px;"><strong>Current Status:</strong> {current_status.title()}</p>
                     <p style="margin: 0 0 10px;"><strong>Check Interval:</strong> Every {job_interval} minutes</p>
                     <p style="margin: 0;"><strong>Failure Threshold:</strong> {failure_threshold} consecutive failures</p>
                 </div>
                 
-                {f'<div style="background: #fee; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f56565;"><p style="margin: 0; color: #c53030;"><strong>Error Details:</strong> {error_message}</p></div>' if error_message else ''}
+                {f'<div style="background: #fee; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f56565;"><p style="margin: 0; color: #c53030;"><strong>Error Details:</strong> {html.escape(error_message)}</p></div>' if error_message else ''}
                 
                 <p style="text-align: center; margin: 30px 0 0; color: #6c757d; font-size: 14px;">
                     Alert generated at {timestamp}<br>
