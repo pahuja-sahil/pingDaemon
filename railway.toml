@@ -12,7 +12,7 @@ services = [
     name = "pingdaemon-worker",
     path = ".",
     dockerfile = "Dockerfile.worker",
-    startCommand = "celery -A app.celery_worker worker --loglevel=info --concurrency=2",
+    startCommand = "celery -A app.celery_worker worker --loglevel=info --concurrency=2 --max-tasks-per-child=100 --time-limit=300 --soft-time-limit=240",
     restartPolicyType = "ON_FAILURE"
   }
 ]

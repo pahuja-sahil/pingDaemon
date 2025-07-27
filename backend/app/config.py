@@ -10,7 +10,7 @@ class Settings:
     DATABASE_URL: str = os.getenv(
         "DATABASE_URL", 
         "postgresql://pingAdmin:Shockingstar15@postgres:5432/pingDaemon"
-    )
+    ) + "?pool_pre_ping=true&pool_recycle=300"
     
     # Redis configuration for Celery
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
