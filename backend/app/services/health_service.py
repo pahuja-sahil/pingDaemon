@@ -30,9 +30,7 @@ class HealthService:
         start_time = time.time()
         
         try:
-            # Make HTTP request with timeout and session for better connection handling
             session = requests.Session()
-            # Add retry logic for connection issues
             session.headers.update({'User-Agent': 'pingDaemon/1.0 Health Checker'})
             
             response = session.get(
@@ -41,10 +39,7 @@ class HealthService:
                 allow_redirects=True
             )
             
-            # Calculate response time in milliseconds
             response_time = (time.time() - start_time) * 1000
-            
-            # Consider status codes 200-299 as healthy
             is_healthy = 200 <= response.status_code < 300
             
             return {
@@ -176,7 +171,6 @@ class HealthService:
                 # Get job owner
                 user = db.query(User).filter(User.id == job.user_id).first()
                 if user:
-                    # Try to queue email first (preferred method)
                     try:
                         email_queue = EmailQueueService.queue_status_change_alert(
                             db=db,
@@ -193,7 +187,6 @@ class HealthService:
                         }
                         logger.info(f"✅ CELERY WORKING: Status change email queued for job {job.id} ({previous_status} → {updated_job.current_status})")
                     except Exception as queue_error:
-                        # Fallback to direct email sending when queue fails
                         logger.warning(f"❌ CELERY FAILED: Using direct send fallback for job {job.id}. Error: {str(queue_error)}")
                         from ..email.resend_client import ResendClient
                         
@@ -225,7 +218,6 @@ class HealthService:
                 logger.error(f"Failed to send status change alert: {str(e)}")
                 alert_triggered = {'error': str(e)}
         
-        # Check if alert should be triggered (legacy compatibility)
         should_alert = (
             not check_result['is_healthy'] and 
             HealthService.check_failure_threshold(db, job)

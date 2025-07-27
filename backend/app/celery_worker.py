@@ -1,13 +1,5 @@
-# Celery app instance
 from celery import Celery
 from .config import settings
-
-# Debug the URLs
-print(f"🔍 Original REDIS_URL: {settings.REDIS_URL}")
-print(f"🔍 Fixed REDIS_URL: {settings.REDIS_URL_FIXED}")
-
-
-# Create Celery app instance
 celery_app = Celery(
     "pingdaemon",
     broker=settings.REDIS_URL_FIXED,
@@ -19,12 +11,6 @@ celery_app = Celery(
     ]
 )
 
-# More debug info
-print(f"🔍 Celery broker URL: {celery_app.conf.broker_url}")
-print(f"🔍 Celery result backend: {celery_app.conf.result_backend}")
-
-
-# Celery configuration
 celery_app.conf.update(
     task_serializer="json",
     accept_content=["json"],

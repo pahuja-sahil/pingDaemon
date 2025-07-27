@@ -30,7 +30,6 @@ export const useMonitors = () => {
     mutationFn: (data: CreateMonitorRequest) => monitorService.createMonitor(data),
     onSuccess: (newMonitor) => {
       queryClient.setQueryData<Monitor[]>(QUERY_KEYS.monitors, (old = []) => [...old, newMonitor]);
-      // Toast is handled by the component for better control over the flow
     },
     onError: (error: Error) => {
       toast.error(error.message || 'Failed to create monitor');
@@ -87,7 +86,6 @@ export const useMonitors = () => {
     mutationFn: (id: string) => monitorService.checkMonitorNow(id),
     onSuccess: (response) => {
       toast.success(response.message || 'Health check scheduled');
-      // Refetch monitors to get updated status
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.monitors });
     },
     onError: (error: Error) => {
@@ -99,11 +97,9 @@ export const useMonitors = () => {
   const immediateHealthCheckMutation = useMutation({
     mutationFn: (id: string) => monitorService.performImmediateHealthCheck(id),
     onSuccess: () => {
-      // Refetch monitors to get updated status after health check
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.monitors });
     },
     onError: (error: Error) => {
-      // Error handling is done in the component
       console.error('Health check failed:', error);
     },
   });

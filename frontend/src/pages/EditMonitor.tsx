@@ -108,7 +108,6 @@ const EditMonitor = () => {
     
     try {
       await deleteMonitor.mutateAsync(id);
-      // Toast is handled by the mutation hook in useMonitors
       navigate('/monitors');
     } catch {
       toast.error('Failed to delete monitor');

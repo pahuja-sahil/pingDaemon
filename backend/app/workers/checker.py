@@ -34,11 +34,7 @@ def check_single_job(self, job_id: str) -> Dict[str, Any]:
                 'success': False
             }
         
-        # Perform health check using existing service
         result = HealthService.perform_health_check(db, job)
-        
-        # Alert is already handled in health service via email queue
-        # result['alert_triggered'] is set by health service if needed
         
         return {
             'success': True,
@@ -76,11 +72,7 @@ def check_all_active_jobs() -> Dict[str, Any]:
         results = []
         for job in active_jobs:
             try:
-                # Perform health check
                 result = HealthService.perform_health_check(db, job)
-                
-                # Alert is already handled in health service via email queue
-                # result['alert_triggered'] is set by health service if needed
                 
                 results.append({
                     'job_id': str(job.id),
@@ -139,11 +131,7 @@ def check_jobs_by_interval(interval_minutes: int) -> Dict[str, Any]:
         results = []
         for job in jobs_to_check:
             try:
-                # Perform health check (removed last_checked logic since field doesn't exist)
                 result = HealthService.perform_health_check(db, job)
-                
-                # Alert is already handled in health service via email queue
-                # result['alert_triggered'] is set by health service if needed
                 
                 results.append({
                     'job_id': str(job.id),

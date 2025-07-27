@@ -14,11 +14,8 @@ api.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     let token: string | null = null;
     
-    // Check multiple possible token locations
-    // 1. Legacy localStorage location
     token = localStorage.getItem('access_token');
     
-    // 2. Zustand persist store (Remember Me = true)
     if (!token) {
       try {
         const authStore = localStorage.getItem('auth-store');
@@ -26,29 +23,15 @@ api.interceptors.request.use(
           const parsed = JSON.parse(authStore);
           token = parsed?.state?.token || null;
         }
-      } catch {
-        // Ignore parsing errors
-      }
+      } catch {}
     }
     
-    // 3. Session storage (Remember Me = false)  
     if (!token) {
       token = sessionStorage.getItem('pingdaemon-token');
     }
     
-    // List of endpoints that don't require authentication
-    const publicEndpoints = ['/auth/register', '/auth/login', '/auth/forgot-password', '/auth/reset-password'];
-    const isPublicEndpoint = publicEndpoints.some(endpoint => config.url?.includes(endpoint));
-    
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
-      console.log('🔑 API Request with token:', { 
-        url: config.url, 
-        hasToken: !!token, 
-        tokenStart: token.substring(0, 10) + '...' 
-      });
-    } else if (!isPublicEndpoint) {
-      console.log('❌ API Request WITHOUT token:', { url: config.url });
     }
     return config;
   },
@@ -65,14 +48,11 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && originalRequest) {
-      // Clear all possible token storage locations
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
       localStorage.removeItem('auth-store');
       sessionStorage.removeItem('pingdaemon-token');
       sessionStorage.removeItem('pingdaemon-user');
-      
-      // Let manual logout handle navigation, don't redirect automatically
     }
 
     const errorMessage = getErrorMessage(error);

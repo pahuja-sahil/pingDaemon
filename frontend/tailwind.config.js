@@ -8,7 +8,6 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Light mode colors
         light: {
           background: '#ffffff',
           foreground: '#f9fafb',
@@ -23,7 +22,6 @@ export default {
           warning: '#f59e0b',
           border: '#e5e7eb',
         },
-        // Dark mode colors
         dark: {
           background: '#0f172a',
           foreground: '#1e293b',

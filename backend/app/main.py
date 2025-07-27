@@ -6,7 +6,6 @@ from .routes import auth, jobs, reports
 
 app = FastAPI(title="pingDaemon", description="Uptime Monitor - Health Check System")
 
-# Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
@@ -14,8 +13,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Include routers
 app.include_router(auth.router)
 app.include_router(jobs.router)
 app.include_router(reports.router)
