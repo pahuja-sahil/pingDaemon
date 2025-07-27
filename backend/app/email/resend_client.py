@@ -99,7 +99,7 @@ class ResendClient:
         recipient_email: str,
         recipient_name: str,
         reset_token: str,
-        base_url: str = "http://localhost:3000"
+        base_url: str = None
     ) -> Dict[str, Any]:
         """
         Send password reset email
@@ -113,6 +113,8 @@ class ResendClient:
         Returns:
             Dict with send result
         """
+        if base_url is None:
+            base_url = settings.FRONTEND_URL
         reset_url = f"{base_url}/reset-password?token={reset_token}"
         subject = "Reset Your pingDaemon Password"
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
@@ -291,7 +293,7 @@ class ResendClient:
                 
                 <p style="text-align: center; margin: 30px 0 0; color: #6c757d; font-size: 14px;">
                     Alert generated at {timestamp}<br>
-                    <a href="http://localhost:3000/monitors" style="color: #667eea;">View Dashboard</a>
+                    <a href="{settings.FRONTEND_URL}/monitors" style="color: #667eea;">View Dashboard</a>
                 </p>
             </div>
         </div>
@@ -312,7 +314,7 @@ class ResendClient:
         {f'Error Details: {error_message}' if error_message else ''}
         
         Alert generated at {timestamp}
-        View Dashboard: http://localhost:3000/monitors
+        View Dashboard: {settings.FRONTEND_URL}/monitors
         """
         
         try:

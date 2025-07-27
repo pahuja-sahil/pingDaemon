@@ -7,6 +7,7 @@ from uuid import UUID
 from ..models.email_queue import EmailQueue
 from ..models.job import Job
 from ..models.user import User
+from ..config import settings
 
 logger = logging.getLogger(__name__)
 
@@ -115,7 +116,7 @@ class EmailQueueService:
                 
                 <p style="text-align: center; margin: 30px 0 0; color: #6c757d; font-size: 14px;">
                     Alert generated at {timestamp}<br>
-                    <a href="http://localhost:3000/monitors" style="color: #667eea;">View Dashboard</a>
+                    <a href="{settings.FRONTEND_URL}/monitors" style="color: #667eea;">View Dashboard</a>
                 </p>
             </div>
         </div>
@@ -136,7 +137,7 @@ class EmailQueueService:
         {f'Error Details: {error_message}' if error_message else ''}
         
         Alert generated at {timestamp}
-        View Dashboard: http://localhost:3000/monitors
+        View Dashboard: {settings.FRONTEND_URL}/monitors
         """
         
         return subject, html_content, text_content

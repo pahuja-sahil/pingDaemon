@@ -50,10 +50,13 @@ class Settings:
     DEBUG: bool = os.getenv("DEBUG", "False").lower() == "true"
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     
+    # Frontend URL configuration
+    FRONTEND_URL: str = os.getenv("FRONTEND_URL", "http://localhost:3000")
+    
     # CORS configuration - dynamic based on environment
     @property
     def CORS_ORIGINS(self) -> list:
-        cors_origins = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+        cors_origins = os.getenv("CORS_ORIGINS", self.FRONTEND_URL)
         return [origin.strip() for origin in cors_origins.split(",")]
     
     class Config:
