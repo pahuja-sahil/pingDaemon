@@ -19,9 +19,9 @@ class Settings:
     def REDIS_URL_FIXED(self) -> str:
         """Fix Redis URL format for cloud providers like Upstash"""
         redis_url = self.REDIS_URL
-        # Fix double slash issue in Upstash URLs
-        if "://" in redis_url and "//" in redis_url[redis_url.index("://") + 3:]:
-            redis_url = redis_url.replace("//", "/", redis_url.count("//") - 1)
+        # Fix double slash issue in Upstash URLs - remove trailing //
+        if redis_url.endswith("//"):
+            redis_url = redis_url[:-1]  # Remove one trailing slash
         return redis_url
     
     # JWT configuration
