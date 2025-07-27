@@ -21,12 +21,20 @@ class Settings:
         redis_url = self.REDIS_URL
         print(f"🔍 Processing URL: {redis_url}")
         
-        # Remove any trailing slashes first
-        redis_url = redis_url.rstrip('/')
-        
-        # Ensure it ends with /0 (database 0)
-        if not redis_url.endswith('/0'):
-            redis_url += '/0'
+        # Handle URLs with query parameters
+        if '?' in redis_url:
+            base_url, query_params = redis_url.split('?', 1)
+            # Remove trailing slashes from base URL
+            base_url = base_url.rstrip('/')
+            # Add database number if not present
+            if not base_url.endswith('/0'):
+                base_url += '/0'
+            redis_url = f"{base_url}?{query_params}"
+        else:
+            # Simple URL without query parameters
+            redis_url = redis_url.rstrip('/')
+            if not redis_url.endswith('/0'):
+                redis_url += '/0'
         
         print(f"🔍 Final URL: {redis_url}")
         return redis_url
