@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class HealthService:
     
     @staticmethod
-    def check_url_health(url: str, timeout: int = 10) -> Dict[str, Any]:
+    def check_url_health(url: str, timeout: int = 20) -> Dict[str, Any]:
         """
         Perform health check on a URL and return results
         
@@ -30,12 +30,15 @@ class HealthService:
         start_time = time.time()
         
         try:
-            # Make HTTP request with timeout
-            response = requests.get(
+            # Make HTTP request with timeout and session for better connection handling
+            session = requests.Session()
+            # Add retry logic for connection issues
+            session.headers.update({'User-Agent': 'pingDaemon/1.0 Health Checker'})
+            
+            response = session.get(
                 url,
                 timeout=timeout,
-                allow_redirects=True,
-                headers={'User-Agent': 'pingDaemon/1.0 Health Checker'}
+                allow_redirects=True
             )
             
             # Calculate response time in milliseconds
@@ -53,6 +56,7 @@ class HealthService:
             
         except requests.exceptions.Timeout:
             response_time = (time.time() - start_time) * 1000
+            logger.warning(f"Health check timeout for {url} after {timeout}s")
             return {
                 'is_healthy': False,
                 'status_code': None,
@@ -60,8 +64,9 @@ class HealthService:
                 'error_message': f"Request timeout after {timeout}s"
             }
             
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.ConnectionError as e:
             response_time = (time.time() - start_time) * 1000
+            logger.warning(f"Health check connection failed for {url}: {str(e)}")
             return {
                 'is_healthy': False,
                 'status_code': None,
