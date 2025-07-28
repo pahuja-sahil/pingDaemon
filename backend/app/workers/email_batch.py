@@ -38,9 +38,9 @@ def process_email_batch(self, batch_size: int = 2):
                 # Mark email as processing
                 EmailQueueService.mark_email_processing(db, email.id)
                 
-                # Prepare email parameters for Resend
+                # Prepare email parameters for Resend - FIXED TO USE CUSTOM DOMAIN
                 params = {
-                    "from": "pingDaemon Alert System <onboarding@resend.dev>",
+                    "from": "pingDaemon Alert System <support@ping-daemon.me>",  
                     "to": [email.recipient_email],
                     "subject": email.subject,
                     "html": email.html_content,
@@ -53,16 +53,16 @@ def process_email_batch(self, batch_size: int = 2):
                 if result['success']:
                     EmailQueueService.mark_email_sent(db, email.id)
                     successful_sends += 1
-                    logger.info(f"Successfully sent email {email.id} to {email.recipient_email}")
+                    logger.info(f"✅ Successfully sent email {email.id} to {email.recipient_email} from support@ping-daemon.me")
                 else:
                     EmailQueueService.mark_email_failed(db, email.id, result['error'])
                     failed_sends += 1
-                    logger.error(f"Failed to send email {email.id}: {result['error']}")
+                    logger.error(f"❌ Failed to send email {email.id}: {result['error']}")
                 
             except Exception as e:
                 EmailQueueService.mark_email_failed(db, email.id, str(e))
                 failed_sends += 1
-                logger.error(f"Exception processing email {email.id}: {str(e)}")
+                logger.error(f"💥 Exception processing email {email.id}: {str(e)}")
         
         result = {
             "processed": len(pending_emails),
@@ -72,11 +72,11 @@ def process_email_batch(self, batch_size: int = 2):
             "timestamp": datetime.utcnow().isoformat()
         }
         
-        logger.info(f"Batch processing complete: {successful_sends} sent, {failed_sends} failed")
+        logger.info(f"📊 Batch processing complete: {successful_sends} sent, {failed_sends} failed")
         return result
         
     except Exception as e:
-        logger.error(f"Error in batch email processing: {str(e)}")
+        logger.error(f"🚨 Error in batch email processing: {str(e)}")
         db.rollback()
         raise self.retry(countdown=60, exc=Exception(f"Batch processing failed: {str(e)}"))
     
@@ -92,7 +92,7 @@ def _add_direct_send_method_to_resend_client():
         """Send email directly without additional formatting"""
         try:
             email = resend.Emails.send(params)
-            logger.info(f"Email sent successfully via Resend")
+            logger.info(f"📧 Email sent successfully via Resend from {params.get('from', 'unknown')}")
             return {
                 'success': True,
                 'message_id': email.get('id'),
@@ -100,7 +100,7 @@ def _add_direct_send_method_to_resend_client():
             }
         except Exception as e:
             error_msg = str(e) if str(e) else f"{type(e).__name__}: Unknown error"
-            logger.error(f"Exception sending email via Resend: {error_msg}")
+            logger.error(f"💥 Exception sending email via Resend: {error_msg}")
             logger.error(f"Exception type: {type(e).__name__}")
             logger.error(f"Email params: {params}")
             if hasattr(e, 'response'):
