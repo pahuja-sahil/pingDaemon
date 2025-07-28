@@ -43,7 +43,11 @@ class Settings:
     @property
     def CORS_ORIGINS(self) -> list:
         cors_origins = os.getenv("CORS_ORIGINS", self.FRONTEND_URL)
-        return [origin.strip() for origin in cors_origins.split(",")]
+        origins = [origin.strip() for origin in cors_origins.split(",")]
+        # Always include the primary domain
+        if "https://ping-daemon.me" not in origins:
+            origins.append("https://ping-daemon.me")
+        return origins
     
     class Config:
         case_sensitive = True

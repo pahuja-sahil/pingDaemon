@@ -67,7 +67,7 @@ class ResendClient:
         
         try:
             params = {
-                "from": "pingDaemon Alert System <onboarding@resend.dev>",
+                "from": "pingDaemon Alert System <support@ping-daemon.me>",
                 "to": [recipient_email],
                 "subject": subject,
                 "html": html_content,
@@ -197,7 +197,7 @@ class ResendClient:
         
         try:
             params = {
-                "from": "pingDaemon Security <onboarding@resend.dev>",
+                "from": "pingDaemon Security <support@ping-daemon.me>",
                 "to": [recipient_email],
                 "subject": subject,
                 "html": html_content,
@@ -323,7 +323,7 @@ class ResendClient:
         
         try:
             params = {
-                "from": "pingDaemon Alert System <onboarding@resend.dev>",
+                "from": "pingDaemon Alert System <support@ping-daemon.me>",
                 "to": [recipient_email],
                 "subject": subject,
                 "html": html_content,

@@ -63,6 +63,7 @@ logs/
 learning-notes.txt
 implementation-checklist.md
 frontend.md
+info.txt
 
 #testing file
 test_resend.py
