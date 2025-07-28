@@ -1,3 +1,4 @@
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
@@ -158,6 +159,11 @@ const RouteHandler = () => {
 
 function App() {
   const { isDark } = useThemeStore();
+
+  // Make queryClient globally accessible for auth store
+  React.useEffect(() => {
+    (window as any).queryClient = queryClient;
+  }, []);
 
   return (
     <ErrorBoundary>

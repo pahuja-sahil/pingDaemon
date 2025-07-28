@@ -90,6 +90,12 @@ export const useAuthStore = create<AuthState>()(
         // Clear session storage as well
         sessionStorage.removeItem('pingdaemon-token');
         sessionStorage.removeItem('pingdaemon-user');
+        
+        // Clear React Query cache to prevent data flashing
+        if (typeof window !== 'undefined' && window.queryClient) {
+          window.queryClient.clear();
+        }
+        
         set({
           user: null,
           token: null,

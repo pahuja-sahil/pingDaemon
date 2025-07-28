@@ -55,6 +55,11 @@ api.interceptors.response.use(
       sessionStorage.removeItem('pingdaemon-token');
       sessionStorage.removeItem('pingdaemon-user');
       
+      // Clear React Query cache to prevent data flashing
+      if (typeof window !== 'undefined' && (window as any).queryClient) {
+        (window as any).queryClient.clear();
+      }
+      
       // Redirect to landing page for clean state
       window.location.href = '/';
     }
