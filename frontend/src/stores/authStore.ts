@@ -92,8 +92,8 @@ export const useAuthStore = create<AuthState>()(
         sessionStorage.removeItem('pingdaemon-user');
         
         // Clear React Query cache to prevent data flashing
-        if (typeof window !== 'undefined' && window.queryClient) {
-          window.queryClient.clear();
+        if (typeof window !== 'undefined' && (window as any).queryClient) {
+          (window as any).queryClient.clear();
         }
         
         set({
