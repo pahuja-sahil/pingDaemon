@@ -48,11 +48,15 @@ api.interceptors.response.use(
     const originalRequest = error.config;
 
     if (error.response?.status === 401 && originalRequest) {
+      // Clear all authentication data on 401 errors
       localStorage.removeItem('access_token');
       localStorage.removeItem('user');
       localStorage.removeItem('auth-store');
       sessionStorage.removeItem('pingdaemon-token');
       sessionStorage.removeItem('pingdaemon-user');
+      
+      // Redirect to landing page for clean state
+      window.location.href = '/';
     }
 
     const errorMessage = getErrorMessage(error);

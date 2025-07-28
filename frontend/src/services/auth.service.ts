@@ -43,6 +43,9 @@ class AuthService {
   logout(): void {
     localStorage.removeItem('access_token');
     localStorage.removeItem('user');
+    localStorage.removeItem('auth-store');
+    sessionStorage.removeItem('pingdaemon-token');
+    sessionStorage.removeItem('pingdaemon-user');
   }
 
   isAuthenticated(): boolean {
