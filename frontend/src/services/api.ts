@@ -60,8 +60,8 @@ api.interceptors.response.use(
         (window as any).queryClient.clear();
       }
       
-      // Redirect to landing page for clean state
-      window.location.href = '/';
+      // Redirect to login page for clean state
+      window.location.href = '/login';
     }
 
     const errorMessage = getErrorMessage(error);
