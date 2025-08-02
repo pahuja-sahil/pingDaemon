@@ -13,6 +13,7 @@ interface AuthState {
   // Actions
   login: (credentials: LoginRequest, rememberMe?: boolean) => Promise<void>;
   register: (userData: RegisterRequest) => Promise<void>;
+  googleSignIn: (googleToken: string) => Promise<void>;
   logout: () => void;
   checkAuth: () => Promise<void>;
   clearError: () => void;
@@ -80,6 +81,30 @@ export const useAuthStore = create<AuthState>()(
             isAuthenticated: false,
             isLoading: false,
             error: error instanceof Error ? error.message : 'Registration failed',
+          });
+          throw error;
+        }
+      },
+
+      googleSignIn: async (googleToken: string) => {
+        try {
+          set({ isLoading: true, error: null });
+          const response = await authService.googleSignIn(googleToken);
+          
+          set({
+            user: response.user,
+            token: response.access_token,
+            isAuthenticated: true,
+            isLoading: false,
+            error: null,
+          });
+        } catch (error) {
+          set({
+            user: null,
+            token: null,
+            isAuthenticated: false,
+            isLoading: false,
+            error: error instanceof Error ? error.message : 'Google sign-in failed',
           });
           throw error;
         }

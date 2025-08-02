@@ -237,46 +237,52 @@ const Landing = () => {
             className="mt-20 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
           >
             {/* Feature 1 */}
-            <div className="group">
-              <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300 hover:shadow-lg">
-                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Shield className="w-6 h-6 text-white" />
+            <div className="group h-full">
+              <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 hover:border-blue-300/50 dark:hover:border-blue-600/50 transition-all duration-300 hover:shadow-lg h-full flex flex-col">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                    <Shield className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white ml-5">
+                    24/7 Monitoring
+                  </h3>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  24/7 Monitoring
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Continuous monitoring of your websites with real-time status updates and comprehensive reports.
+                <p className="text-gray-600 dark:text-gray-300 text-left flex-1">
+                  Continuous monitoring with real-time updates and reports.
                 </p>
               </div>
             </div>
 
             {/* Feature 2 */}
-            <div className="group">
-              <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 hover:border-purple-300/50 dark:hover:border-purple-600/50 transition-all duration-300 hover:shadow-lg">
-                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Bell className="w-6 h-6 text-white" />
+            <div className="group h-full">
+              <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 hover:border-purple-300/50 dark:hover:border-purple-600/50 transition-all duration-300 hover:shadow-lg h-full flex flex-col">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                    <Bell className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white ml-5">
+                    Instant Alerts
+                  </h3>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Instant Alerts
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Get notified immediately via email when your website goes down or experiences issues.
+                <p className="text-gray-600 dark:text-gray-300 text-left flex-1">
+                  Get notified immediately when issues are detected.
                 </p>
               </div>
             </div>
 
             {/* Feature 3 */}
-            <div className="group">
-              <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 hover:border-green-300/50 dark:hover:border-green-600/50 transition-all duration-300 hover:shadow-lg">
-                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Clock className="w-6 h-6 text-white" />
+            <div className="group h-full">
+              <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm rounded-2xl p-6 border border-gray-200/50 dark:border-gray-700/50 hover:border-green-300/50 dark:hover:border-green-600/50 transition-all duration-300 hover:shadow-lg h-full flex flex-col">
+                <div className="flex items-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-green-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 flex-shrink-0">
+                    <Clock className="w-5 h-5 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white ml-5">
+                    Performance Tracking
+                  </h3>
                 </div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  Performance Tracking
-                </h3>
-                <p className="text-gray-600 dark:text-gray-300">
-                  Track response times and uptime statistics to optimize your website's performance.
+                <p className="text-gray-600 dark:text-gray-300 text-left flex-1">
+                  Track response times, monitor uptime statistics, and optimize website performance.
                 </p>
               </div>
             </div>

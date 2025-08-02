@@ -10,8 +10,16 @@ class User(Base):
     
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid4, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=True)  # Made nullable for OAuth users
     is_active = Column(Boolean, default=True)
+    
+    # OAuth fields
+    google_id = Column(String, nullable=True, index=True)
+    provider = Column(String, default="email")  # "email" or "google"
+    avatar_url = Column(String, nullable=True)
+    name = Column(String, nullable=True)
+    
+    # Password reset fields
     reset_token = Column(String, nullable=True, index=True)
     reset_token_expires = Column(DateTime(timezone=True), nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())

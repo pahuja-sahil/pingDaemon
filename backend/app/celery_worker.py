@@ -17,6 +17,8 @@ celery_app.conf.update(
     result_serializer="json",
     timezone="UTC",
     enable_utc=True,
+    broker_connection_retry_on_startup=True,
+    result_expires=7200,  # Task results expire after 2 hours
 )
 
 # Periodic task configuration
@@ -51,10 +53,10 @@ celery_app.conf.beat_schedule = {
         'schedule': 3600.0,  # 60 minutes in seconds
         'args': (60,)
     },
-    # Process email queue every 45 seconds (respects rate limit)
+    # Process email queue every 5 minutes (respects rate limit)
     'process-email-batch': {
         'task': 'app.workers.email_batch.process_email_batch',
-        'schedule': 30.0,  # Every 45 seconds for production efficiency
-        'args': (2,)  # Batch size of 2 emails
+        'schedule': 300.0,  # Every 5 minutes for production efficiency
+        'args': (5,)  # Batch size of 5 emails
     },
 }

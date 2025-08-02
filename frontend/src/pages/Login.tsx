@@ -11,11 +11,12 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Card from '../components/common/Card';
 import ThemeToggle from '../components/layout/ThemeToggle';
+import GoogleSignInButton from '../components/auth/GoogleSignInButton';
 
 const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const { login, isLoading } = useAuth();
+  const { login, googleSignIn, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -49,6 +50,24 @@ const Login = () => {
         toast.error(errorMessage);
       }
     }
+  };
+
+  const handleGoogleSuccess = async (response: any) => {
+    try {
+      await googleSignIn(response.credential);
+      toast.success('Signed in with Google successfully!');
+      setTimeout(() => {
+        navigate('/');
+      }, 500);
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed';
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleGoogleError = (error: any) => {
+    console.error('Google Sign-In Error:', error);
+    toast.error('Google sign-in was cancelled or failed');
   };
 
   return (
@@ -90,6 +109,30 @@ const Login = () => {
               <p className="text-gray-600 dark:text-gray-400 mt-2">
                 Sign in to your pingDaemon account
               </p>
+            </div>
+
+            {/* Google Sign-In Button */}
+            <div className="mb-6">
+              <GoogleSignInButton
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                fullWidth
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Divider */}
+            <div className="mb-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    Or continue with email
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Login Form */}

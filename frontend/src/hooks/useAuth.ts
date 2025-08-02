@@ -11,6 +11,7 @@ export const useAuth = () => {
     error,
     login,
     register,
+    googleSignIn,
     logout,
     checkAuth,
     clearError,
@@ -38,6 +39,10 @@ export const useAuth = () => {
     await register(userData);
   };
 
+  const handleGoogleSignIn = async (googleToken: string) => {
+    await googleSignIn(googleToken);
+  };
+
   const handleLogout = () => {
     logout();
   };
@@ -53,6 +58,7 @@ export const useAuth = () => {
     // Actions
     login: handleLogin,
     register: handleRegister,
+    googleSignIn: handleGoogleSignIn,
     logout: handleLogout,
     clearError,
     checkAuth,

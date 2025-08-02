@@ -4,7 +4,6 @@ Celery worker entrypoint
 Run with: celery -A celery_worker worker --loglevel=info
 """
 
-import os
 import sys
 from pathlib import Path
 
@@ -16,3 +15,5 @@ from app.celery_worker import celery_app
 
 if __name__ == "__main__":
     celery_app.start()
+
+    

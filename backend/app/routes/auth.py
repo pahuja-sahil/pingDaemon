@@ -3,8 +3,9 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
 from ..database import get_db
-from ..schemas.user import UserCreate, UserResponse, UserLogin, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse
+from ..schemas.user import UserCreate, UserResponse, UserLogin, ForgotPasswordRequest, ResetPasswordRequest, PasswordResetResponse, GoogleAuthRequest
 from ..services.auth_service import AuthService
+from ..services.google_oauth_service import GoogleOAuthService
 
 router = APIRouter(prefix="/auth", tags=["authentication"])
 
@@ -119,3 +120,31 @@ async def reset_password(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to reset password"
         )
+
+# Google OAuth Routes
+@router.post("/google")
+async def google_oauth(
+    request: GoogleAuthRequest,
+    db: Session = Depends(get_db)
+):
+    """Authenticate user with Google OAuth token"""
+    return await GoogleOAuthService.authenticate_with_google(db, request.google_token)
+
+@router.get("/google/login")
+async def google_login_url():
+    """Get Google OAuth login URL (for reference - not needed with Google Identity Services)"""
+    from urllib.parse import urlencode
+    from ..config import settings
+    
+    base_url = "https://accounts.google.com/o/oauth2/auth"
+    params = {
+        "client_id": settings.GOOGLE_CLIENT_ID,
+        "redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "scope": "openid email profile",
+        "response_type": "code",
+        "access_type": "offline",
+        "prompt": "consent"
+    }
+    
+    auth_url = f"{base_url}?{urlencode(params)}"
+    return {"auth_url": auth_url}

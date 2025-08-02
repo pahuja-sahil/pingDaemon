@@ -11,11 +11,12 @@ import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Card from '../components/common/Card';
 import ThemeToggle from '../components/layout/ThemeToggle';
+import GoogleSignInButton from '../components/auth/GoogleSignInButton';
 
 const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const { register: registerUser, isLoading } = useAuth();
+  const { register: registerUser, googleSignIn, isLoading } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -57,6 +58,22 @@ const Signup = () => {
     return 'Strong';
   };
 
+  const handleGoogleSuccess = async (response: any) => {
+    try {
+      await googleSignIn(response.credential);
+      toast.success('Account created with Google successfully! Welcome to pingDaemon.');
+      navigate('/');
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Google sign-in failed';
+      toast.error(errorMessage);
+    }
+  };
+
+  const handleGoogleError = (error: any) => {
+    console.error('Google Sign-In Error:', error);
+    toast.error('Google sign-in was cancelled or failed');
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900">
       {/* Background Pattern */}
@@ -96,6 +113,30 @@ const Signup = () => {
               <p className="text-gray-600 dark:text-gray-400 mt-2">
                 Start monitoring your websites today
               </p>
+            </div>
+
+            {/* Google Sign-In Button */}
+            <div className="mb-6">
+              <GoogleSignInButton
+                onSuccess={handleGoogleSuccess}
+                onError={handleGoogleError}
+                fullWidth
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Divider */}
+            <div className="mb-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-gray-300 dark:border-gray-600" />
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400">
+                    Or create with email
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Signup Form */}

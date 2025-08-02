@@ -21,9 +21,15 @@ class UserLogin(UserBase):
 class UserResponse(UserBase):
     id: UUID
     is_active: bool
+    provider: Optional[str] = "email"
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
     
     class Config:
         from_attributes = True
+
+class GoogleAuthRequest(BaseModel):
+    google_token: str
 
 class ForgotPasswordRequest(BaseModel):
     email: EmailStr

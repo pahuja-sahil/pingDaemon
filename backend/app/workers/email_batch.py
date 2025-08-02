@@ -1,15 +1,15 @@
 import logging
 from datetime import datetime
 from sqlalchemy.orm import Session
-
 from ..database import get_db
 from ..email.resend_client import ResendClient
 from ..services.email_queue_service import EmailQueueService
+from ..celery_worker import celery_app
+
 
 logger = logging.getLogger(__name__)
 
 # Import the main Celery app instance
-from ..celery_worker import celery_app
 
 @celery_app.task(bind=True, retry_backoff=True, max_retries=3)
 def process_email_batch(self, batch_size: int = 2):

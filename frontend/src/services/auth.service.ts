@@ -1,6 +1,19 @@
 import api from './api';
 import type { LoginRequest, RegisterRequest, AuthResponse, User } from '../types/auth.types';
 
+export interface GoogleAuthResponse {
+  access_token: string;
+  token_type: string;
+  user: {
+    id: string;
+    email: string;
+    name?: string;
+    avatar_url?: string;
+    provider: string;
+    is_active: boolean;
+  };
+}
+
 class AuthService {
   async login(credentials: LoginRequest): Promise<AuthResponse> {
     const formData = new URLSearchParams();
@@ -89,6 +102,33 @@ class AuthService {
       token,
       password
     });
+  }
+
+  async googleSignIn(googleToken: string): Promise<GoogleAuthResponse> {
+    try {
+      const response = await api.post<GoogleAuthResponse>('/auth/google', {
+        google_token: googleToken
+      });
+      
+      const data = response.data;
+      
+      // Store token and user data
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('user', JSON.stringify(data.user));
+      
+      return data;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || 'Google sign-in failed');
+    }
+  }
+
+  async getGoogleLoginUrl(): Promise<string> {
+    try {
+      const response = await api.get('/auth/google/login');
+      return response.data.auth_url;
+    } catch (error: any) {
+      throw new Error(error.response?.data?.detail || 'Failed to get Google login URL');
+    }
   }
 }
 

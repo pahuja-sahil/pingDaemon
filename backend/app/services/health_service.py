@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class HealthService:
     
     @staticmethod
-    def check_url_health(url: str, timeout: int = 20) -> Dict[str, Any]:
+    def check_url_health(url: str, timeout: int = 10) -> Dict[str, Any]:
         """
         Perform health check on a URL and return results
         
