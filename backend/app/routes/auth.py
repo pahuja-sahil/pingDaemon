@@ -130,6 +130,17 @@ async def google_oauth(
     """Authenticate user with Google OAuth token"""
     return await GoogleOAuthService.authenticate_with_google(db, request.google_token)
 
+@router.get("/google/config")
+async def google_config_status():
+    """Check Google OAuth configuration status (for debugging)"""
+    from ..config import settings
+    return {
+        "google_client_id_configured": bool(settings.GOOGLE_CLIENT_ID),
+        "google_client_secret_configured": bool(settings.GOOGLE_CLIENT_SECRET),
+        "google_redirect_uri": settings.GOOGLE_REDIRECT_URI,
+        "debug": settings.DEBUG
+    }
+
 @router.get("/google/login")
 async def google_login_url():
     """Get Google OAuth login URL (for reference - not needed with Google Identity Services)"""

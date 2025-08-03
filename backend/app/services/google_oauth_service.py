@@ -1,4 +1,5 @@
 import httpx
+import logging
 from google.oauth2 import id_token
 from google.auth.transport import requests
 from sqlalchemy.orm import Session
@@ -9,12 +10,24 @@ from ..models.user import User
 from ..config import settings
 from ..utils.security import create_access_token
 
+logger = logging.getLogger(__name__)
+
 class GoogleOAuthService:
     
     @staticmethod
     async def verify_google_token(token: str) -> Optional[Dict[str, Any]]:
         """Verify Google ID token and return user info"""
         try:
+            # Check if Google Client ID is configured
+            if not settings.GOOGLE_CLIENT_ID:
+                logger.error("GOOGLE_CLIENT_ID not configured")
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Google OAuth not configured properly"
+                )
+            
+            logger.info(f"Verifying Google token with client ID: {settings.GOOGLE_CLIENT_ID[:20]}...")
+            
             # Verify the token with Google
             idinfo = id_token.verify_oauth2_token(
                 token, 
@@ -24,14 +37,16 @@ class GoogleOAuthService:
             
             # Check if the token is from the correct issuer
             if idinfo['iss'] not in ['accounts.google.com', 'https://accounts.google.com']:
+                logger.error(f"Invalid token issuer: {idinfo.get('iss')}")
                 raise ValueError('Wrong issuer.')
                 
+            logger.info("Google token verification successful")
             return idinfo
         except ValueError as e:
-            print(f"Google token verification failed: {str(e)}")
+            logger.error(f"Google token verification failed: {str(e)}")
             return None
         except Exception as e:
-            print(f"Unexpected error verifying Google token: {str(e)}")
+            logger.error(f"Unexpected error verifying Google token: {str(e)}", exc_info=True)
             return None
     
     @staticmethod
@@ -47,10 +62,10 @@ class GoogleOAuthService:
                 if response.status_code == 200:
                     return response.json()
                 else:
-                    print(f"Failed to get Google user info: {response.status_code}")
+                    logger.error(f"Failed to get Google user info: {response.status_code}")
                     return None
         except Exception as e:
-            print(f"Error getting Google user info: {str(e)}")
+            logger.error(f"Error getting Google user info: {str(e)}", exc_info=True)
             return None
     
     @staticmethod
@@ -144,8 +159,8 @@ class GoogleOAuthService:
         except HTTPException:
             raise
         except Exception as e:
-            print(f"Google authentication error: {str(e)}")
+            logger.error(f"Google authentication error: {str(e)}", exc_info=True)
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="Google authentication failed"
+                detail=f"Google authentication failed: {str(e)}"
             )
