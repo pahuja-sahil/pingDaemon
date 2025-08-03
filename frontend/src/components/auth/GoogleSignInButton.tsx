@@ -45,7 +45,7 @@ const GoogleSignInButton = ({
       
       // Initialize Google Sign-In
       google.accounts.id.initialize({
-        client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+        client_id: "142358410476-s4mtpmgnffddllgvpkv32h687n3teg4o.apps.googleusercontent.com",
         callback: (response: any) => {
           setIsLoading(false);
           onSuccess(response);
