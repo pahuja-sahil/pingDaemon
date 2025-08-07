@@ -19,6 +19,18 @@ celery_app.conf.update(
     enable_utc=True,
     broker_connection_retry_on_startup=True,
     result_expires=7200,  # Task results expire after 2 hours
+    # Connection pooling and optimization
+    broker_pool_limit=10,
+    broker_connection_max_retries=5,
+    broker_connection_retry_delay=2,
+    result_backend_max_retries=5,
+    result_backend_retry_delay=2,
+    # Reduce connection overhead
+    task_always_eager=False,
+    task_eager_propagates=False,
+    # Connection persistence
+    broker_heartbeat=30,
+    result_backend_heartbeat=30,
 )
 
 # Periodic task configuration
@@ -53,10 +65,10 @@ celery_app.conf.beat_schedule = {
         'schedule': 3600.0,  # 60 minutes in seconds
         'args': (60,)
     },
-    # Process email queue every 5 minutes (respects rate limit)
+    # Process email queue every 10 minutes (reduce Redis load)
     'process-email-batch': {
         'task': 'app.workers.email_batch.process_email_batch',
-        'schedule': 300.0,  # Every 5 minutes for production efficiency
-        'args': (5,)  # Batch size of 5 emails
+        'schedule': 600.0,  # Every 10 minutes to reduce Redis requests
+        'args': (8,)  # Increase batch size to maintain throughput
     },
 }
