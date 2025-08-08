@@ -55,7 +55,7 @@ def check_single_job(self, job_id: str) -> Dict[str, Any]:
         db.close()
 
 
-@celery_app.task
+@celery_app.task(ignore_result=True)  # Don't store results to save Redis
 def check_all_active_jobs() -> Dict[str, Any]:
     """
     Check health of all active (enabled) jobs
@@ -106,7 +106,7 @@ def check_all_active_jobs() -> Dict[str, Any]:
         db.close()
 
 
-@celery_app.task
+@celery_app.task(ignore_result=True)  # Don't store results to save Redis
 def check_jobs_by_interval(interval_minutes: int) -> Dict[str, Any]:
     """
     Check jobs that should be checked based on their interval

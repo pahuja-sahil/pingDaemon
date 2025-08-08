@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 # Import the main Celery app instance
 
-@celery_app.task(bind=True, retry_backoff=True, max_retries=3)
+@celery_app.task(bind=True, retry_backoff=True, max_retries=3, ignore_result=True)  # Don't store results to save Redis
 def process_email_batch(self, batch_size: int = 2):
     """
     Process a batch of queued emails with rate limiting
