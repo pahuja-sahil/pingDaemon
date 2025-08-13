@@ -31,6 +31,11 @@ celery_app.conf.update(
     # Connection persistence
     broker_heartbeat=30,
     result_backend_heartbeat=30,
+    
+    broker_use_ssl={
+        'ssl_cert_reqs': 'required',
+        'ssl_check_hostname': True,
+    },
 )
 
 # Periodic task configuration
