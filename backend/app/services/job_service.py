@@ -30,18 +30,22 @@ class JobService:
                 detail="Failure threshold must be between 1 and 10"
             )
         
-        # Create new job
+        # Create new job with unknown status (will be updated after first health check)
         db_job = Job(
             url=str(job_data.url),
             interval=job_data.interval,
             is_enabled=job_data.is_enabled,
             failure_threshold=job_data.failure_threshold,
-            user_id=user.id
+            user_id=user.id,
+            current_status="unknown",    # Initial status for new monitors
+            previous_status="unknown"    # Initial previous status
         )
         
         db.add(db_job)
         db.commit()
         db.refresh(db_job)
+        
+        logger.info(f"Created new monitor for user {user.id}: {db_job.url} (status: unknown, will check soon)")
         return db_job
     
     @staticmethod
@@ -68,7 +72,7 @@ class JobService:
     
     @staticmethod
     def update_job(db: Session, job_id: UUID, job_data: JobUpdate, user: User) -> Job:
-        """Update an existing job"""
+        """Update an existing job WITHOUT resetting status"""
         job = JobService.get_job_by_id(db, job_id, user)
         
         # Validate interval if provided
@@ -90,18 +94,13 @@ class JobService:
         
         # Update fields that are provided
         update_data = job_data.dict(exclude_unset=True)
-        url_changed = False
         
         for field, value in update_data.items():
             if field == "url" and value is not None:
                 old_url = job.url
                 new_url = str(value)
                 if old_url != new_url:
-                    url_changed = True
-                    # Reset status when URL changes to force proper status change detection
-                    job.current_status = "unknown"
-                    job.previous_status = "unknown"
-                    logger.info(f"🔄 URL CHANGED: Job {job.id} URL changed from '{old_url}' to '{new_url}' - Status reset to 'unknown'")
+                    logger.info(f"🔄 URL CHANGED: Job {job.id} URL changed from '{old_url}' to '{new_url}' - Status kept as '{job.current_status}'")
                 setattr(job, field, new_url)
             else:
                 setattr(job, field, value)

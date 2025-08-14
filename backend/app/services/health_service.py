@@ -133,8 +133,11 @@ class HealthService:
                 # Simplified: no degraded status, go straight to unhealthy on first failure
                 job.current_status = "unhealthy"
         
-        # Log status update for debugging
-        logger.info(f"💾 STATUS UPDATE: Job {job.id} - '{old_current_status}' → '{job.current_status}' (previous: '{job.previous_status}', healthy: {is_healthy})")
+        # Special logging for first-time status changes
+        if old_current_status == "unknown":
+            logger.info(f"🎯 FIRST CHECK: Job {job.id} - 'unknown' → '{job.current_status}' (healthy: {is_healthy}) - Email will be sent!")
+        else:
+            logger.info(f"💾 STATUS UPDATE: Job {job.id} - '{old_current_status}' → '{job.current_status}' (previous: '{job.previous_status}', healthy: {is_healthy})")
         
         try:
             db.commit()
@@ -193,9 +196,14 @@ class HealthService:
                     alert_triggered = {
                         'method': 'queued',
                         'email_queue_id': email_queue.id,
-                        'status_change': f"{previous_status} → {updated_job.current_status}"
+                        'status_change': f"{previous_status} → {updated_job.current_status}",
+                        'is_first_check': previous_status == 'unknown'
                     }
-                    logger.info(f"✅ Status change email queued for job {job.id} ({previous_status} → {updated_job.current_status})")
+                    
+                    if previous_status == 'unknown':
+                        logger.info(f"📧 FIRST TIME EMAIL: Queued initial status email for job {job.id} ({previous_status} → {updated_job.current_status})")
+                    else:
+                        logger.info(f"📧 STATUS CHANGE EMAIL: Queued email for job {job.id} ({previous_status} → {updated_job.current_status})")
             except Exception as e:
                 logger.error(f"Failed to queue status change alert: {str(e)}")
                 alert_triggered = {'error': str(e)}
@@ -214,5 +222,6 @@ class HealthService:
             'should_alert': should_alert,
             'health_log_id': health_log.id,
             'skipped': False,
-            'alert_triggered': alert_triggered
+            'alert_triggered': alert_triggered,
+            'is_first_check': previous_status == 'unknown'
         }
