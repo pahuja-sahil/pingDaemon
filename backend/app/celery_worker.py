@@ -69,7 +69,7 @@ celery_app.conf.beat_schedule = {
     # Process email queue every 10 minutes (reduce Redis load)
     'process-email-batch': {
         'task': 'app.workers.email_batch.process_email_batch',
-        'schedule': 200.0, # Every 10 minutes to reduce Redis requests
+        'schedule': 150.0, # Every 10 minutes to reduce Redis requests
         'args': (8,)  # Increase batch size to maintain throughput
     },
 }
