@@ -8,6 +8,7 @@ celery_app = Celery(
         "app.workers.checker",
         "app.workers.mailer",
         "app.workers.email_batch"
+        "app.workers.cleanup"
     ]
 )
 
@@ -69,7 +70,13 @@ celery_app.conf.beat_schedule = {
     # Process email queue every 10 minutes (reduce Redis load)
     'process-email-batch': {
         'task': 'app.workers.email_batch.process_email_batch',
-        'schedule': 150.0, # Every 10 minutes to reduce Redis requests
-        'args': (8,)  # Increase batch size to maintain throughput
+        'schedule': 120.0, # Every 2 minutes to reduce Redis requests
+        'args': (7,)  # Increase batch size to maintain throughput
     },
+    # Weekly data cleanup (every Sunday at 2 AM UTC)
+    'weekly-data-cleanup': {
+    'task': 'app.workers.cleanup.cleanup_old_data',
+    'schedule': 604800.0,  # 7 days in seconds  
+    'args': ()
+},
 }
