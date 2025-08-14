@@ -164,6 +164,9 @@ class HealthService:
         # Update job status (this also sets previous_status in the job)
         updated_job = HealthService.update_job_status(db, job, check_result['is_healthy'])
         
+        # Debug logging for status change detection
+        logger.info(f"🔍 DEBUG: Job {job.id} - Previous: '{previous_status}' → Current: '{updated_job.current_status}' | Health: {check_result['is_healthy']} | Status Change: {previous_status != updated_job.current_status}")
+        
         # Check for status change and send email if needed
         alert_triggered = None
         if previous_status != updated_job.current_status:
@@ -217,7 +220,7 @@ class HealthService:
             except Exception as e:
                 logger.error(f"Failed to send status change alert: {str(e)}")
                 alert_triggered = {'error': str(e)}
-        
+
         should_alert = (
             not check_result['is_healthy'] and 
             HealthService.check_failure_threshold(db, job)

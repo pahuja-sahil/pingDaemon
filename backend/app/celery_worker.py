@@ -32,9 +32,6 @@ celery_app.conf.update(
     broker_heartbeat=30,
     result_backend_heartbeat=30,
     
-    broker_use_ssl={
-        'ssl_cert_reqs': 'CERT_NONE'
-    }
 )
 
 # Periodic task configuration
