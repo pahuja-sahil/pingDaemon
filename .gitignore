@@ -5,8 +5,7 @@
 .env.production
 
 # Project documentation (keep local only)
-claude.md
-pingDaemon.md
+.claude
 
 # Backend
 __pycache__/

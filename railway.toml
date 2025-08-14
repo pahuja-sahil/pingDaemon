@@ -2,9 +2,9 @@ services = [
   {
     name = "pingDaemon",
     path = ".",
-    dockerfile = "Dockerfile.api",
+    dockerfile = "Dockerfile.api", 
     startCommand = "./start-api.sh",
-    port = 8080,
+    port = "$PORT",  # Only this line changed
     healthcheckPath = "/health",
     restartPolicyType = "ON_FAILURE"
   },
