@@ -2,8 +2,7 @@ from ..celery_worker import celery_app
 from sqlalchemy.orm import Session
 from sqlalchemy import and_
 from datetime import datetime, timedelta
-from typing import List, Dict, Any
-
+from typing import Dict, Any
 from ..database import SessionLocal
 from ..models.job import Job
 from ..services.health_service import HealthService
