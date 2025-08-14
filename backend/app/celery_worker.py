@@ -7,7 +7,7 @@ celery_app = Celery(
     include=[
         "app.workers.checker",
         "app.workers.mailer",
-        "app.workers.email_batch"
+        "app.workers.email_batch",
         "app.workers.cleanup"
     ]
 )
