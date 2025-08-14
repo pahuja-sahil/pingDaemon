@@ -120,6 +120,7 @@ class HealthService:
     def update_job_status(db: Session, job: Job, is_healthy: bool) -> Job:
         """Update job current status based on health check"""
         # Store previous status for status change detection
+        old_current_status = job.current_status
         job.previous_status = job.current_status
         
         if is_healthy:
@@ -132,8 +133,18 @@ class HealthService:
                 # Simplified: no degraded status, go straight to unhealthy on first failure
                 job.current_status = "unhealthy"
         
-        db.commit()
-        db.refresh(job)
+        # Log status update for debugging
+        logger.info(f"💾 STATUS UPDATE: Job {job.id} - '{old_current_status}' → '{job.current_status}' (previous: '{job.previous_status}', healthy: {is_healthy})")
+        
+        try:
+            db.commit()
+            db.refresh(job)
+            logger.debug(f"✅ Status update committed successfully for job {job.id}")
+        except Exception as e:
+            logger.error(f"❌ Failed to commit status update for job {job.id}: {str(e)}")
+            db.rollback()
+            raise
+        
         return job
     
     @staticmethod
@@ -163,9 +174,6 @@ class HealthService:
         
         # Update job status (this also sets previous_status in the job)
         updated_job = HealthService.update_job_status(db, job, check_result['is_healthy'])
-        
-        # Debug logging for status change detection
-        logger.info(f"🔍 DEBUG: Job {job.id} - Previous: '{previous_status}' → Current: '{updated_job.current_status}' | Health: {check_result['is_healthy']} | Status Change: {previous_status != updated_job.current_status}")
         
         # Check for status change and send email if needed
         alert_triggered = None

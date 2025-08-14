@@ -2,10 +2,13 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from typing import List, Optional
 from uuid import UUID
+import logging
 
 from ..models.job import Job
 from ..models.user import User
 from ..schemas.job import JobCreate, JobUpdate
+
+logger = logging.getLogger(__name__)
 
 class JobService:
     
@@ -87,9 +90,19 @@ class JobService:
         
         # Update fields that are provided
         update_data = job_data.dict(exclude_unset=True)
+        url_changed = False
+        
         for field, value in update_data.items():
             if field == "url" and value is not None:
-                setattr(job, field, str(value))
+                old_url = job.url
+                new_url = str(value)
+                if old_url != new_url:
+                    url_changed = True
+                    # Reset status when URL changes to force proper status change detection
+                    job.current_status = "unknown"
+                    job.previous_status = "unknown"
+                    logger.info(f"🔄 URL CHANGED: Job {job.id} URL changed from '{old_url}' to '{new_url}' - Status reset to 'unknown'")
+                setattr(job, field, new_url)
             else:
                 setattr(job, field, value)
         
