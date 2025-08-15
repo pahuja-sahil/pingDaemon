@@ -35,8 +35,8 @@ class EmailQueueService:
             error_message: Optional error message
         """
         
-        # Generate unified email content
-        subject, html_content, text_content = EmailQueueService._get_unified_email_content(
+        # Generate unified email content (no special first-time logic)
+        subject, html_content, text_content = EmailQueueService._get_status_change_email_content(
             job, previous_status, current_status, error_message
         )
         
@@ -56,13 +56,13 @@ class EmailQueueService:
         db.commit()
         db.refresh(email_queue)
         
-        # Simplified logging
-        logger.info(f"📧 Queued status change email: {previous_status} → {current_status} for job {job.id}")
+        # Simplified logging - no special cases
+        logger.info(f"📧 Email queued: {previous_status} → {current_status} for job {job.id} ({user.email})")
         
         return email_queue
     
     @staticmethod
-    def _get_unified_email_content(
+    def _get_status_change_email_content(
         job: Job, 
         previous_status: str, 
         current_status: str, 
@@ -71,33 +71,60 @@ class EmailQueueService:
         """
         Generate unified email content for any status change
         
-        Uses the same format regardless of whether it's first-time or regular status change
+        Handles all possible status transitions including:
+        - unknown → healthy (new monitor success)
+        - unknown → unhealthy (new monitor failure) 
+        - healthy → unhealthy (service went down)
+        - unhealthy → healthy (service restored)
         """
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
         
-        # Determine email type based on current status (simplified logic)
-        if current_status == 'unhealthy':
+        # Handle all status transition scenarios
+        if previous_status == 'unknown' and current_status == 'unhealthy':
+            # New monitor failed its first check
+            subject = f"❌ Initial Check Failed: {job.url}"
+            status_text = "INITIAL CHECK FAILED"
+            status_emoji = "❌"
+            intro_text = "Your new monitor has completed its first health check and found an issue."
+            
+        elif previous_status == 'unknown' and current_status == 'healthy':
+            # New monitor passed its first check
+            subject = f"✅ Monitor Active: {job.url}"
+            status_text = "MONITOR ACTIVE"
+            status_emoji = "🟢"
+            intro_text = "Your new monitor is active and the service is healthy."
+            
+        elif previous_status == 'healthy' and current_status == 'unhealthy':
+            # Existing healthy service went down
+            subject = f"🚨 Service Down: {job.url}"
+            status_text = "SERVICE DOWN"
+            status_emoji = "🔴"
+            intro_text = "Your monitored service has gone down."
+            
+        elif previous_status == 'unhealthy' and current_status == 'healthy':
+            # Service recovered from downtime
+            subject = f"✅ Service Restored: {job.url}"
+            status_text = "SERVICE RESTORED"
+            status_emoji = "🟢"
+            intro_text = "Great news! Your monitored service has been restored."
+            
+        elif current_status == 'healthy':
+            # Any other transition to healthy
+            subject = f"✅ Service Online: {job.url}"
+            status_text = "SERVICE ONLINE" 
+            status_emoji = "🟢"
+            intro_text = "Your monitored service is online and healthy."
+            
+        elif current_status == 'unhealthy':
+            # Any other transition to unhealthy
             subject = f"🚨 Service Down: {job.url}"
             status_text = "SERVICE DOWN"
             status_emoji = "🔴"
             intro_text = "Your monitored service is currently down."
             
-        elif current_status == 'healthy':
-            if previous_status == 'unhealthy':
-                subject = f"✅ Service Restored: {job.url}"
-                status_text = "SERVICE RESTORED"
-                status_emoji = "🟢"
-                intro_text = "Your monitored service has been restored."
-            else:
-                # Covers both first-time checks and other transitions to healthy
-                subject = f"✅ Service Online: {job.url}"
-                status_text = "SERVICE ONLINE" 
-                status_emoji = "🟢"
-                intro_text = "Your monitored service is online and healthy."
-                
         else:
-            # Generic status change
+            # Generic status change fallback
             subject = f"📊 Status Update: {job.url}"
             status_text = f"{previous_status.upper()} → {current_status.upper()}"
             status_emoji = "📊"
@@ -127,6 +154,10 @@ class EmailQueueService:
                 
                 {f'<div style="background: #fee; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f56565;"><p style="margin: 0; color: #c53030;"><strong>Error Details:</strong> {html.escape(error_message)}</p></div>' if error_message else ''}
                 
+                {f'<div style="background: #f0fff4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #38a169;"><p style="margin: 0; color: #2f855a;"><strong>🎉 Monitoring Started!</strong> We will now check your service every {job.interval} minutes and notify you of any changes.</p></div>' if previous_status == 'unknown' and current_status == 'healthy' else ''}
+                
+                {f'<div style="background: #fff5f5; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f56565;"><p style="margin: 0; color: #c53030;"><strong>⚠️ Monitor Setup Complete</strong> Your monitor is now active, but the initial check detected an issue. Please verify your service is accessible.</p></div>' if previous_status == 'unknown' and current_status == 'unhealthy' else ''}
+                
                 <p style="text-align: center; margin: 30px 0 0; color: #6c757d; font-size: 14px;">
                     Status change detected at {timestamp}<br>
                     <a href="{settings.FRONTEND_URL}/monitors" style="color: #667eea;">View Dashboard</a>
@@ -150,6 +181,10 @@ class EmailQueueService:
         Failure Threshold: {job.failure_threshold} consecutive failures
         
         {f'Error Details: {error_message}' if error_message else ''}
+        
+        {f'🎉 Monitoring Started! We will now check your service every {job.interval} minutes and notify you of any changes.' if previous_status == 'unknown' and current_status == 'healthy' else ''}
+        
+        {f'⚠️ Monitor Setup Complete: Your monitor is now active, but the initial check detected an issue. Please verify your service is accessible.' if previous_status == 'unknown' and current_status == 'unhealthy' else ''}
         
         Status change detected at {timestamp}
         View Dashboard: {settings.FRONTEND_URL}/monitors
