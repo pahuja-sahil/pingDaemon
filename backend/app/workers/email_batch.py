@@ -38,9 +38,9 @@ def process_email_batch(self, batch_size: int = 2):
                 # Mark email as processing
                 EmailQueueService.mark_email_processing(db, email.id)
                 
-                # Prepare email parameters for Resend - FIXED TO USE CUSTOM DOMAIN
+                # Prepare email parameters for Resend with CLEAN SENDER ADDRESS
                 params = {
-                    "from": "pingDaemon Alert System <support@ping-daemon.me>",  
+                    "from": "PingDaemon <noreply@ping-daemon.me>",  # UPDATED: Clean, professional sender
                     "to": [email.recipient_email],
                     "subject": email.subject,
                     "html": email.html_content,
@@ -53,7 +53,7 @@ def process_email_batch(self, batch_size: int = 2):
                 if result['success']:
                     EmailQueueService.mark_email_sent(db, email.id)
                     successful_sends += 1
-                    logger.info(f"✅ Successfully sent email {email.id} to {email.recipient_email} from support@ping-daemon.me")
+                    logger.info(f"✅ Successfully sent email {email.id} to {email.recipient_email} from PingDaemon")
                 else:
                     EmailQueueService.mark_email_failed(db, email.id, result['error'])
                     failed_sends += 1
@@ -92,7 +92,7 @@ def _add_direct_send_method_to_resend_client():
         """Send email directly without additional formatting"""
         try:
             email = resend.Emails.send(params)
-            logger.info(f"📧 Email sent successfully via Resend from {params.get('from', 'unknown')}")
+            logger.info(f"📧 Email sent successfully via Resend from {params.get('from', 'PingDaemon')}")
             return {
                 'success': True,
                 'message_id': email.get('id'),
