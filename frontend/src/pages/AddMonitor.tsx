@@ -69,20 +69,11 @@ const AddMonitor = () => {
 
   const onSubmit = async (data: MonitorFormData) => {
     try {
-      // Create the monitor first
+      // Create the monitor - backend automatically schedules health check
       const newMonitor = await createMonitor.mutateAsync(data);
       
       // Show success toast for monitor creation
-      toast.success('Monitor created successfully!');
-      
-      // Immediately check the health status of the new monitor
-      try {
-        await immediateHealthCheck(newMonitor.id);
-        toast.success('Initial health check completed');
-      } catch (error) {
-        console.error('Health check failed:', error);
-        toast.warning('Monitor created but initial health check failed');
-      }
+      toast.success('Monitor created successfully! Initial health check scheduled.');
       
       navigate('/monitors');
     } catch (error) {
