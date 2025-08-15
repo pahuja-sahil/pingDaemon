@@ -181,10 +181,12 @@ class HealthService:
         # Check for status change and send email if needed
         alert_triggered = None
         if previous_status != updated_job.current_status:
+            logger.info(f"🔄 STATUS CHANGE DETECTED: {previous_status} → {updated_job.current_status} for job {job.id}")
             try:
                 # Get job owner
                 user = db.query(User).filter(User.id == job.user_id).first()
                 if user:
+                    logger.info(f"👤 Found user {user.id} ({user.email}) for job {job.id}")
                     email_queue = EmailQueueService.queue_status_change_alert(
                         db=db,
                         job=updated_job,
@@ -201,11 +203,17 @@ class HealthService:
                     }
                     
                     if previous_status == 'unknown':
-                        logger.info(f"📧 FIRST TIME EMAIL: Queued initial status email for job {job.id} ({previous_status} → {updated_job.current_status})")
+                        logger.info(f"📧 FIRST TIME EMAIL: Successfully queued initial status email for job {job.id} (queue ID: {email_queue.id}) - {user.email}")
                     else:
-                        logger.info(f"📧 STATUS CHANGE EMAIL: Queued email for job {job.id} ({previous_status} → {updated_job.current_status})")
+                        logger.info(f"📧 STATUS CHANGE EMAIL: Successfully queued email for job {job.id} (queue ID: {email_queue.id}) - {user.email}")
+                else:
+                    logger.error(f"❌ USER NOT FOUND: No user found with ID {job.user_id} for job {job.id}")
+                    alert_triggered = {'error': f'User not found: {job.user_id}'}
             except Exception as e:
-                logger.error(f"Failed to queue status change alert: {str(e)}")
+                logger.error(f"💥 EXCEPTION queuing status change alert for job {job.id}: {str(e)}")
+                logger.error(f"Exception type: {type(e).__name__}")
+                import traceback
+                logger.error(f"Traceback: {traceback.format_exc()}")
                 alert_triggered = {'error': str(e)}
 
         should_alert = (
