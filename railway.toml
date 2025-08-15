@@ -1,6 +1,6 @@
 services = [
   {
-    name = "pingDaemon",
+    name = "pingdaemon-api",
     path = ".",
     dockerfile = "Dockerfile.api", 
     startCommand = "./start-api.sh",
