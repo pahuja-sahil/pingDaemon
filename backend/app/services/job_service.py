@@ -45,7 +45,20 @@ class JobService:
         db.commit()
         db.refresh(db_job)
         
-        logger.info(f"Created new monitor for user {user.id}: {db_job.url} (status: unknown, will check soon)")
+        # Schedule immediate health check for new monitor if enabled
+        if db_job.is_enabled:
+            try:
+                from ..services.scheduler_service import SchedulerService
+                result = SchedulerService.schedule_immediate_check(db_job.id)
+                if result.get('success'):
+                    logger.info(f"✅ NEW MONITOR CREATED: {db_job.url} - Immediate health check scheduled (task: {result.get('task_id')})")
+                else:
+                    logger.warning(f"⚠️ NEW MONITOR CREATED: {db_job.url} - Failed to schedule immediate check: {result.get('error')}")
+            except Exception as e:
+                logger.error(f"❌ NEW MONITOR CREATED: {db_job.url} - Exception scheduling immediate check: {str(e)}")
+        else:
+            logger.info(f"📝 NEW MONITOR CREATED: {db_job.url} - Monitor disabled, no health check scheduled")
+        
         return db_job
     
     @staticmethod
