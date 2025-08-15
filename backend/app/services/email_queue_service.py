@@ -95,50 +95,64 @@ class EmailQueueService:
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
         
-        # SPAM-OPTIMIZED: Handle all status transition scenarios (no emojis)
+        # Handle all status transition scenarios with visual indicators
         if previous_status == 'unknown' and current_status == 'unhealthy':
             # New monitor failed its first check
             subject = f"Monitor Issue: {job.url}"
             status_text = "INITIAL CHECK FAILED"
             intro_text = "Your website monitoring detected an accessibility issue."
+            status_icon = "🚨"  # Red siren for unhealthy
+            status_color = "#dc3545"  # Bootstrap danger red
             
         elif previous_status == 'unknown' and current_status == 'healthy':
             # New monitor passed its first check
             subject = f"Monitor Online: {job.url}"
             status_text = "MONITOR ACTIVE"
             intro_text = "Your website monitoring has been successfully activated."
+            status_icon = "✅"  # Green checkmark for healthy
+            status_color = "#28a745"  # Bootstrap success green
             
         elif previous_status == 'healthy' and current_status == 'unhealthy':
             # Existing healthy service went down
             subject = f"Service Down: {job.url}"
             status_text = "SERVICE DOWN"
             intro_text = "Your monitored website is currently experiencing issues."
+            status_icon = "🚨"  # Red siren for unhealthy
+            status_color = "#dc3545"  # Bootstrap danger red
             
         elif previous_status == 'unhealthy' and current_status == 'healthy':
             # Service recovered from downtime
             subject = f"Service Restored: {job.url}"
             status_text = "SERVICE RESTORED"
             intro_text = "Your monitored website has returned to normal operation."
+            status_icon = "✅"  # Green checkmark for healthy
+            status_color = "#28a745"  # Bootstrap success green
             
         elif current_status == 'healthy':
             # Any other transition to healthy
             subject = f"Service Online: {job.url}"
             status_text = "SERVICE ONLINE" 
             intro_text = "Your monitored website is online and healthy."
+            status_icon = "✅"  # Green checkmark for healthy
+            status_color = "#28a745"  # Bootstrap success green
             
         elif current_status == 'unhealthy':
             # Any other transition to unhealthy
             subject = f"Service Down: {job.url}"
             status_text = "SERVICE DOWN"
             intro_text = "Your monitored website is currently experiencing issues."
+            status_icon = "🚨"  # Red siren for unhealthy
+            status_color = "#dc3545"  # Bootstrap danger red
             
         else:
             # Generic status change fallback
             subject = f"Status Update: {job.url}"
             status_text = f"{previous_status.upper()} TO {current_status.upper()}"
             intro_text = "Your monitored website status has changed."
+            status_icon = "⚪"  # White circle for unknown
+            status_color = "#6c757d"  # Bootstrap secondary gray
         
-        # SPAM-OPTIMIZED HTML email content (no emojis, professional language)
+        # HTML email content with visual status icons
         html_content = f"""
         <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
@@ -148,7 +162,8 @@ class EmailQueueService:
             
             <div style="background: white; padding: 40px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
                 <div style="text-align: center; margin-bottom: 30px;">
-                    <h2 style="color: #667eea; margin: 0; font-size: 20px;">{status_text}</h2>
+                    <div style="font-size: 32px; margin-bottom: 10px;">{status_icon}</div>
+                    <h2 style="color: {status_color}; margin: 0; font-size: 20px;">{status_text}</h2>
                     <p style="margin: 10px 0 0; color: #6c757d;">{intro_text}</p>
                 </div>
                 
@@ -181,11 +196,11 @@ class EmailQueueService:
         </div>
         """
         
-        # SPAM-OPTIMIZED plain text email content
+        # Plain text email content with status icon
         text_content = f"""
         Website Monitoring Update - PingDaemon
         
-        {status_text}
+        {status_icon} {status_text}
         
         {intro_text}
         
