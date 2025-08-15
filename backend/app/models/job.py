@@ -15,7 +15,6 @@ class Job(Base):
     failure_threshold = Column(Integer, default=3)  # repeated failures before alert
     current_status = Column(String, default="unknown")  # healthy, unhealthy, unknown
     previous_status = Column(String, default="unknown")  # for status change tracking
-    initial_email_sent = Column(Boolean, default=False)  # track if initial activation email sent
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     updated_at = Column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
     

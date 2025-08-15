@@ -171,12 +171,51 @@ class HealthService:
         if status_changed:
             logger.info(f"🔄 STATUS CHANGE: {previous_status} → {updated_job.current_status} for job {job.id}")
             
-            # Check if this is an initial status change and if we've already sent the email
+            # Check if this is an initial status change and if we've already sent an activation email
             is_initial_change = previous_status == "unknown"
-            if is_initial_change and updated_job.initial_email_sent:
-                logger.info(f"⏭️ INITIAL EMAIL ALREADY SENT: Skipping duplicate email for job {job.id}")
-                email_queued = {'skipped': 'Initial email already sent'}
+            if is_initial_change:
+                # Check if we've already sent an initial activation email by looking for existing emails
+                from ..models.email_queue import EmailQueue
+                existing_activation_email = db.query(EmailQueue).filter(
+                    EmailQueue.job_id == job.id,
+                    EmailQueue.subject.like(f"Monitor%{job.url}%"),
+                    EmailQueue.status.in_(["pending", "processing", "sent"])
+                ).first()
+                
+                if existing_activation_email:
+                    logger.info(f"⏭️ INITIAL EMAIL ALREADY EXISTS: Skipping duplicate email for job {job.id} (existing: {existing_activation_email.id})")
+                    email_queued = {'skipped': f'Initial email already exists: {existing_activation_email.id}'}
+                else:
+                    # This is the first initial email for this monitor
+                    try:
+                        # Get job owner
+                        user = db.query(User).filter(User.id == job.user_id).first()
+                        if user:
+                            # Queue email for initial status change
+                            email_queue = EmailQueueService.queue_status_change_alert(
+                                db=db,
+                                job=updated_job,
+                                user=user,
+                                previous_status=previous_status,
+                                current_status=updated_job.current_status,
+                                error_message=check_result.get('error_message')
+                            )
+                            
+                            email_queued = {
+                                'method': 'unified_format',
+                                'email_queue_id': email_queue.id,
+                                'status_change': f"{previous_status} → {updated_job.current_status}"
+                            }
+                            
+                            logger.info(f"📧 Monitor activation email queued for {user.email}: {previous_status} → {updated_job.current_status}")
+                        else:
+                            logger.error(f"❌ No user found for job {job.id}")
+                            email_queued = {'error': f'User not found: {job.user_id}'}
+                    except Exception as e:
+                        logger.error(f"💥 Exception queuing email for job {job.id}: {str(e)}")
+                        email_queued = {'error': str(e)}
             else:
+                # This is a regular status change (not initial)
                 try:
                     # Get job owner
                     user = db.query(User).filter(User.id == job.user_id).first()
@@ -197,14 +236,7 @@ class HealthService:
                             'status_change': f"{previous_status} → {updated_job.current_status}"
                         }
                         
-                        # Mark initial email as sent for new monitors
-                        if is_initial_change:
-                            updated_job.initial_email_sent = True
-                            db.commit()
-                            db.refresh(updated_job)
-                            logger.info(f"📧 Monitor activation email queued for {user.email}: {previous_status} → {updated_job.current_status}")
-                        else:
-                            logger.info(f"📧 Status change email queued for {user.email}: {previous_status} → {updated_job.current_status}")
+                        logger.info(f"📧 Status change email queued for {user.email}: {previous_status} → {updated_job.current_status}")
                     else:
                         logger.error(f"❌ No user found for job {job.id}")
                         email_queued = {'error': f'User not found: {job.user_id}'}
