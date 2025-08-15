@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Globe, Clock, AlertTriangle, Save, X, Trash2 } from 'lucide-react';
 import { useMonitors } from '../hooks/useMonitors';
 import { useToast } from '../hooks/useToast';
+import monitorService from '../services/monitor.service';
 import Layout from '../components/layout/Layout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -124,12 +125,15 @@ const EditMonitor = () => {
 
     setIsTestingUrl(true);
     try {
-      // This would typically make a request to your backend to test the URL
-      // For now, we'll simulate the test
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success('URL is accessible');
-    } catch {
-      toast.error('URL test failed');
+      const result = await monitorService.testUrl(watchedUrl);
+      
+      if (result.is_accessible) {
+        toast.success(`URL is accessible (${result.status_code}, ${result.response_time}ms)`);
+      } else {
+        toast.error(result.error_message || 'URL is not accessible');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'URL test failed');
     } finally {
       setIsTestingUrl(false);
     }

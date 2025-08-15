@@ -86,6 +86,17 @@ class MonitorService {
       error_message: healthCheck.error_message
     };
   }
+
+  async testUrl(url: string): Promise<{
+    success: boolean;
+    is_accessible: boolean;
+    status_code?: number;
+    response_time?: number;
+    error_message?: string;
+  }> {
+    const response = await api.post('/jobs/test-url', { url });
+    return response.data;
+  }
 }
 
 export const monitorService = new MonitorService();

@@ -7,6 +7,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Globe, Clock, AlertTriangle, Save, X } from 'lucide-react';
 import { useMonitors } from '../hooks/useMonitors';
 import { useToast } from '../hooks/useToast';
+import monitorService from '../services/monitor.service';
 import Layout from '../components/layout/Layout';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -71,15 +72,17 @@ const AddMonitor = () => {
       // Create the monitor first
       const newMonitor = await createMonitor.mutateAsync(data);
       
-      // Immediately check the health status of the new monitor using toast.promise
-      await toast.promise(
-        immediateHealthCheck(newMonitor.id),
-        {
-          loading: 'Checking monitor status...',
-          success: 'Monitor created and status checked successfully!',
-          error: 'Monitor created but initial health check failed'
-        }
-      );
+      // Show success toast for monitor creation
+      toast.success('Monitor created successfully!');
+      
+      // Immediately check the health status of the new monitor
+      try {
+        await immediateHealthCheck(newMonitor.id);
+        toast.success('Initial health check completed');
+      } catch (error) {
+        console.error('Health check failed:', error);
+        toast.warning('Monitor created but initial health check failed');
+      }
       
       navigate('/monitors');
     } catch (error) {
@@ -96,12 +99,15 @@ const AddMonitor = () => {
 
     setIsTestingUrl(true);
     try {
-      // This would typically make a request to your backend to test the URL
-      // For now, we'll simulate the test
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      toast.success('URL is accessible');
-    } catch {
-      toast.error('URL test failed');
+      const result = await monitorService.testUrl(watchedUrl);
+      
+      if (result.is_accessible) {
+        toast.success(`URL is accessible (${result.status_code}, ${result.response_time}ms)`);
+      } else {
+        toast.error(result.error_message || 'URL is not accessible');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'URL test failed');
     } finally {
       setIsTestingUrl(false);
     }

@@ -122,3 +122,25 @@ async def get_task_status(
     """Get the status of a scheduled health check task"""
     result = SchedulerService.get_task_status(task_id)
     return result
+
+@router.post("/test-url", response_model=dict)
+async def test_url(
+    url_data: dict,
+    current_user: User = Depends(get_current_user)
+):
+    """Test URL accessibility without creating a monitor"""
+    url = url_data.get('url')
+    if not url:
+        raise HTTPException(status_code=400, detail="URL is required")
+    
+    # Perform health check on the URL
+    result = HealthService.check_url_health(url)
+    
+    return {
+        "success": True,
+        "url": url,
+        "is_accessible": result['is_healthy'],
+        "status_code": result['status_code'],
+        "response_time": result['response_time'],
+        "error_message": result['error_message']
+    }

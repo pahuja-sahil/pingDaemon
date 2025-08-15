@@ -164,17 +164,20 @@ class HealthService:
         # Update job status (this also sets previous_status in the job)
         updated_job = HealthService.update_job_status(db, job, check_result['is_healthy'])
         
-        # SIMPLIFIED: Check for ANY status change and queue email
+        # Check for status change and queue email (except for initial unknown status)
         email_queued = None
         status_changed = previous_status != updated_job.current_status
         
-        if status_changed:
+        # Only send emails if this is NOT the initial status change from "unknown"
+        should_send_email = status_changed and previous_status != "unknown"
+        
+        if should_send_email:
             logger.info(f"🔄 STATUS CHANGE: {previous_status} → {updated_job.current_status} for job {job.id}")
             try:
                 # Get job owner
                 user = db.query(User).filter(User.id == job.user_id).first()
                 if user:
-                    # Queue email for ANY status change (handles all transitions)
+                    # Queue email for status change (skip initial unknown → active transitions)
                     email_queue = EmailQueueService.queue_status_change_alert(
                         db=db,
                         job=updated_job,
@@ -197,6 +200,8 @@ class HealthService:
             except Exception as e:
                 logger.error(f"💥 Exception queuing email for job {job.id}: {str(e)}")
                 email_queued = {'error': str(e)}
+        elif status_changed and previous_status == "unknown":
+            logger.info(f"⏭️ INITIAL STATUS SET: {previous_status} → {updated_job.current_status} for job {job.id} (no email sent)")
 
         should_alert = (
             not check_result['is_healthy'] and 
