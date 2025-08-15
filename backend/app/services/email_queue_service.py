@@ -24,7 +24,7 @@ class EmailQueueService:
         error_message: str = None
     ) -> EmailQueue:
         """
-        Queue an email alert for a status change
+        Queue an email alert for any status change using unified format
         
         Args:
             db: Database session
@@ -35,15 +35,15 @@ class EmailQueueService:
             error_message: Optional error message
         """
         
-        # Determine email content based on status change
-        subject, html_content, text_content = EmailQueueService._get_status_change_email_content(
+        # Generate unified email content
+        subject, html_content, text_content = EmailQueueService._get_unified_email_content(
             job, previous_status, current_status, error_message
         )
         
         # Create email queue entry
         email_queue = EmailQueue(
             recipient_email=user.email,
-            recipient_name=user.email,  # Using email as name for now
+            recipient_name=user.email,
             subject=subject,
             html_content=html_content,
             text_content=text_content,
@@ -56,65 +56,58 @@ class EmailQueueService:
         db.commit()
         db.refresh(email_queue)
         
-        if previous_status == 'unknown':
-            logger.info(f"📧 Queued FIRST CHECK alert for job {job.id}: unknown → {current_status}")
-        else:
-            logger.info(f"📧 Queued status change alert for job {job.id}: {previous_status} → {current_status}")
+        # Simplified logging
+        logger.info(f"📧 Queued status change email: {previous_status} → {current_status} for job {job.id}")
         
         return email_queue
     
     @staticmethod
-    def _get_status_change_email_content(
+    def _get_unified_email_content(
         job: Job, 
         previous_status: str, 
         current_status: str, 
         error_message: str = None
     ) -> tuple:
-        """Generate email content based on status change"""
+        """
+        Generate unified email content for any status change
+        
+        Uses the same format regardless of whether it's first-time or regular status change
+        """
         
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S UTC")
-        is_first_check = previous_status == 'unknown'
         
-        # Determine email type and content
-        if previous_status in ['healthy', 'unknown'] and current_status == 'unhealthy':
-            # Service went down (or failed initial check)
-            if is_first_check:
-                subject = f"❌ Initial Check Failed: {job.url}"
-                status_text = "INITIAL CHECK FAILED"
-                status_emoji = "❌"
-                intro_text = "Your new monitor has completed its first health check and found an issue."
+        # Determine email type based on current status (simplified logic)
+        if current_status == 'unhealthy':
+            subject = f"🚨 Service Down: {job.url}"
+            status_text = "SERVICE DOWN"
+            status_emoji = "🔴"
+            intro_text = "Your monitored service is currently down."
+            
+        elif current_status == 'healthy':
+            if previous_status == 'unhealthy':
+                subject = f"✅ Service Restored: {job.url}"
+                status_text = "SERVICE RESTORED"
+                status_emoji = "🟢"
+                intro_text = "Your monitored service has been restored."
             else:
-                subject = f"🚨 Service Down Alert: {job.url}"
-                status_text = "DOWN"
-                status_emoji = "🔴"
-                intro_text = "Your monitored service has gone down."
+                # Covers both first-time checks and other transitions to healthy
+                subject = f"✅ Service Online: {job.url}"
+                status_text = "SERVICE ONLINE" 
+                status_emoji = "🟢"
+                intro_text = "Your monitored service is online and healthy."
                 
-        elif previous_status == 'unhealthy' and current_status == 'healthy':
-            # Service recovered  
-            subject = f"✅ Service Restored: {job.url}"
-            status_text = "RESTORED"
-            status_emoji = "🟢"
-            intro_text = "Great news! Your monitored service has been restored."
-            
-        elif previous_status == 'unknown' and current_status == 'healthy':
-            # Service came online (first check successful)
-            subject = f"✅ Monitor Active: {job.url}"
-            status_text = "ONLINE & MONITORED"
-            status_emoji = "🟢"
-            intro_text = "Excellent! Your new monitor is active and the service is healthy."
-            
         else:
             # Generic status change
-            subject = f"📊 Status Change: {job.url}"
+            subject = f"📊 Status Update: {job.url}"
             status_text = f"{previous_status.upper()} → {current_status.upper()}"
             status_emoji = "📊"
             intro_text = "Your monitored service has changed status."
         
-        # HTML email content
+        # Unified HTML email content (same template for all cases)
         html_content = f"""
         <div style="max-width: 600px; margin: 0 auto; font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0;">
-                <h1 style="margin: 0; font-size: 24px;">{status_emoji} {"Monitor Status" if is_first_check else "Status Change Alert"}</h1>
+                <h1 style="margin: 0; font-size: 24px;">{status_emoji} Status Update</h1>
                 <p style="margin: 10px 0 0; opacity: 0.9;">pingDaemon Monitoring System</p>
             </div>
             
@@ -126,7 +119,7 @@ class EmailQueueService:
                 
                 <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
                     <p style="margin: 0 0 10px;"><strong>URL:</strong> <a href="{html.escape(job.url)}" style="color: #667eea;">{html.escape(job.url)}</a></p>
-                    {f'<p style="margin: 0 0 10px;"><strong>Previous Status:</strong> {previous_status.title()}</p>' if not is_first_check else ''}
+                    <p style="margin: 0 0 10px;"><strong>Previous Status:</strong> {previous_status.title()}</p>
                     <p style="margin: 0 0 10px;"><strong>Current Status:</strong> {current_status.title()}</p>
                     <p style="margin: 0 0 10px;"><strong>Check Interval:</strong> Every {job.interval} minutes</p>
                     <p style="margin: 0;"><strong>Failure Threshold:</strong> {job.failure_threshold} consecutive failures</p>
@@ -134,35 +127,31 @@ class EmailQueueService:
                 
                 {f'<div style="background: #fee; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f56565;"><p style="margin: 0; color: #c53030;"><strong>Error Details:</strong> {html.escape(error_message)}</p></div>' if error_message else ''}
                 
-                {f'<div style="background: #f0fff4; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #38a169;"><p style="margin: 0; color: #2f855a;"><strong>🎉 Monitoring Started!</strong> We will now check your service every {job.interval} minutes and notify you of any changes.</p></div>' if is_first_check and current_status == 'healthy' else ''}
-                
                 <p style="text-align: center; margin: 30px 0 0; color: #6c757d; font-size: 14px;">
-                    Alert generated at {timestamp}<br>
+                    Status change detected at {timestamp}<br>
                     <a href="{settings.FRONTEND_URL}/monitors" style="color: #667eea;">View Dashboard</a>
                 </p>
             </div>
         </div>
         """
         
-        # Plain text email content
+        # Unified plain text email content
         text_content = f"""
-        {"Monitor Status" if is_first_check else "Status Change Alert"} - pingDaemon
+        Status Update - pingDaemon
         
         {status_text}
         
         {intro_text}
         
         URL: {job.url}
-        {f'Previous Status: {previous_status.title()}' if not is_first_check else ''}
+        Previous Status: {previous_status.title()}
         Current Status: {current_status.title()}
         Check Interval: Every {job.interval} minutes
         Failure Threshold: {job.failure_threshold} consecutive failures
         
         {f'Error Details: {error_message}' if error_message else ''}
         
-        {f'🎉 Monitoring Started! We will now check your service every {job.interval} minutes and notify you of any changes.' if is_first_check and current_status == 'healthy' else ''}
-        
-        Alert generated at {timestamp}
+        Status change detected at {timestamp}
         View Dashboard: {settings.FRONTEND_URL}/monitors
         """
         
