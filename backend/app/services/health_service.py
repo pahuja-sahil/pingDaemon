@@ -120,7 +120,6 @@ class HealthService:
     def update_job_status(db: Session, job: Job, is_healthy: bool) -> Job:
         """Update job current status based on health check"""
         # Store previous status for status change detection
-        old_current_status = job.current_status
         job.previous_status = job.current_status
         
         if is_healthy:
@@ -130,24 +129,11 @@ class HealthService:
             if HealthService.check_failure_threshold(db, job):
                 job.current_status = "unhealthy"
             else:
-                # Simplified: no degraded status, go straight to unhealthy on first failure
+                # Still mark as unhealthy immediately for simplicity
                 job.current_status = "unhealthy"
         
-        # Special logging for first-time status changes
-        if old_current_status == "unknown":
-            logger.info(f"🎯 FIRST CHECK: Job {job.id} - 'unknown' → '{job.current_status}' (healthy: {is_healthy}) - Email will be sent!")
-        else:
-            logger.info(f"💾 STATUS UPDATE: Job {job.id} - '{old_current_status}' → '{job.current_status}' (previous: '{job.previous_status}', healthy: {is_healthy})")
-        
-        try:
-            db.commit()
-            db.refresh(job)
-            logger.debug(f"✅ Status update committed successfully for job {job.id}")
-        except Exception as e:
-            logger.error(f"❌ Failed to commit status update for job {job.id}: {str(e)}")
-            db.rollback()
-            raise
-        
+        db.commit()
+        db.refresh(job)
         return job
     
     @staticmethod
@@ -178,15 +164,19 @@ class HealthService:
         # Update job status (this also sets previous_status in the job)
         updated_job = HealthService.update_job_status(db, job, check_result['is_healthy'])
         
-        # Check for status change and send email if needed
-        alert_triggered = None
-        if previous_status != updated_job.current_status:
+        # Check for status change and ONLY QUEUE email if needed
+        email_queued = None
+        status_changed = previous_status != updated_job.current_status
+        
+        if status_changed:
             logger.info(f"🔄 STATUS CHANGE DETECTED: {previous_status} → {updated_job.current_status} for job {job.id}")
             try:
                 # Get job owner
                 user = db.query(User).filter(User.id == job.user_id).first()
                 if user:
                     logger.info(f"👤 Found user {user.id} ({user.email}) for job {job.id}")
+                    
+                    # ONLY QUEUE THE EMAIL - DO NOT SEND DIRECTLY
                     email_queue = EmailQueueService.queue_status_change_alert(
                         db=db,
                         job=updated_job,
@@ -195,26 +185,26 @@ class HealthService:
                         current_status=updated_job.current_status,
                         error_message=check_result.get('error_message')
                     )
-                    alert_triggered = {
-                        'method': 'queued',
+                    
+                    email_queued = {
+                        'method': 'queued_only',
                         'email_queue_id': email_queue.id,
                         'status_change': f"{previous_status} → {updated_job.current_status}",
                         'is_first_check': previous_status == 'unknown'
                     }
                     
                     if previous_status == 'unknown':
-                        logger.info(f"📧 FIRST TIME EMAIL: Successfully queued initial status email for job {job.id} (queue ID: {email_queue.id}) - {user.email}")
+                        logger.info(f"📧 FIRST TIME EMAIL QUEUED: Successfully queued initial status email for job {job.id} (queue ID: {email_queue.id}) - {user.email}")
                     else:
-                        logger.info(f"📧 STATUS CHANGE EMAIL: Successfully queued email for job {job.id} (queue ID: {email_queue.id}) - {user.email}")
+                        logger.info(f"📧 STATUS CHANGE EMAIL QUEUED: Successfully queued email for job {job.id} (queue ID: {email_queue.id}) - {user.email}")
                 else:
                     logger.error(f"❌ USER NOT FOUND: No user found with ID {job.user_id} for job {job.id}")
-                    alert_triggered = {'error': f'User not found: {job.user_id}'}
+                    email_queued = {'error': f'User not found: {job.user_id}'}
             except Exception as e:
                 logger.error(f"💥 EXCEPTION queuing status change alert for job {job.id}: {str(e)}")
-                logger.error(f"Exception type: {type(e).__name__}")
                 import traceback
                 logger.error(f"Traceback: {traceback.format_exc()}")
-                alert_triggered = {'error': str(e)}
+                email_queued = {'error': str(e)}
 
         should_alert = (
             not check_result['is_healthy'] and 
@@ -230,6 +220,6 @@ class HealthService:
             'should_alert': should_alert,
             'health_log_id': health_log.id,
             'skipped': False,
-            'alert_triggered': alert_triggered,
+            'email_queued': email_queued,
             'is_first_check': previous_status == 'unknown'
         }
