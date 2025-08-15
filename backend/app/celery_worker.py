@@ -1,9 +1,10 @@
 from celery import Celery
 from .config import settings
+
 celery_app = Celery(
     "pingdaemon",
-    broker=settings.REDIS_URL_FIXED,
-    backend=settings.REDIS_URL_FIXED,
+    broker=settings.CELERY_BROKER_URL,
+    backend=settings.CELERY_RESULT_BACKEND,
     include=[
         "app.workers.checker",
         "app.workers.mailer",
@@ -20,19 +21,10 @@ celery_app.conf.update(
     enable_utc=True,
     broker_connection_retry_on_startup=True,
     result_expires=7200,  # Task results expire after 2 hours
-    # Connection pooling and optimization
-    broker_pool_limit=10,
-    broker_connection_max_retries=5,
-    broker_connection_retry_delay=2,
-    result_backend_max_retries=5,
-    result_backend_retry_delay=2,
-    # Reduce connection overhead
+    
+    # General settings (removed PostgreSQL-incompatible options)
     task_always_eager=False,
     task_eager_propagates=False,
-    # Connection persistence
-    broker_heartbeat=30,
-    result_backend_heartbeat=30,
-    
 )
 
 # Periodic task configuration
@@ -70,7 +62,7 @@ celery_app.conf.beat_schedule = {
     # Process email queue every 10 minutes (reduce Redis load)
     'process-email-batch': {
         'task': 'app.workers.email_batch.process_email_batch',
-        'schedule': 60.0, # Every 2 minutes to reduce Redis requests
+        'schedule': 60.0, # Every 1 minutes to reduce Redis requests
         'args': (7,)  # Increase batch size to maintain throughput
     },
     # Weekly data cleanup (every Sunday at 2 AM UTC)

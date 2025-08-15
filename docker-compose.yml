@@ -19,20 +19,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis for Celery
-  redis:
-    image: redis:7-alpine
-    container_name: pingdaemon_redis
-    ports:
-      - "6379:6379"
-    networks:
-      - pingdaemon_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
   # FastAPI Backend
   backend:
     build:
@@ -41,7 +27,6 @@ services:
     container_name: pingdaemon_backend
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
       SECRET_KEY: ${SECRET_KEY}
       DEBUG: ${DEBUG}
       RESEND_API_KEY: ${RESEND_API_KEY}
@@ -53,8 +38,6 @@ services:
       - "8000:8000"
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks:
       - pingdaemon_network
@@ -71,12 +54,9 @@ services:
     command: celery -A app.celery_worker worker --loglevel=info
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
       FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks:
       - pingdaemon_network
@@ -93,12 +73,9 @@ services:
     command: celery -A app.celery_worker beat --loglevel=info
     environment:
       DATABASE_URL: ${DATABASE_URL}
-      REDIS_URL: ${REDIS_URL}
       FRONTEND_URL: ${FRONTEND_URL}
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
         condition: service_healthy
     networks:
       - pingdaemon_network

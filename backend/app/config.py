@@ -10,25 +10,27 @@ class Settings:
         "postgresql://pingAdmin:Shockingstar15@postgres:5432/pingDaemon"
     )
     
-    REDIS_URL: str = os.getenv("REDIS_URL", "redis://redis:6379/0")
-    
     @property
-    def REDIS_URL_FIXED(self) -> str:
-        """Fix Redis URL format for cloud providers like Upstash"""
-        redis_url = self.REDIS_URL
-        
-        if '?' in redis_url:
-            base_url, query_params = redis_url.split('?', 1)
-            base_url = base_url.rstrip('/')
-            if not base_url.endswith('/0'):
-                base_url += '/0'
-            redis_url = f"{base_url}?{query_params}"
-        else:
-            redis_url = redis_url.rstrip('/')
-            if not redis_url.endswith('/0'):
-                redis_url += '/0'
-        
-        return redis_url
+    def CELERY_BROKER_URL(self) -> str:
+        """PostgreSQL broker URL for Celery"""
+        db_url = self.DATABASE_URL
+        if db_url.startswith("postgresql://"):
+            return f"sqlalchemy+{db_url}"
+        elif db_url.startswith("postgres://"):
+            # Railway/Heroku style URL
+            return db_url.replace("postgres://", "sqlalchemy+postgresql://", 1)
+        return f"sqlalchemy+{db_url}"
+    
+    @property  
+    def CELERY_RESULT_BACKEND(self) -> str:
+        """PostgreSQL result backend URL for Celery"""
+        db_url = self.DATABASE_URL
+        if db_url.startswith("postgresql://"):
+            return f"db+{db_url}"
+        elif db_url.startswith("postgres://"):
+            # Railway/Heroku style URL  
+            return db_url.replace("postgres://", "db+postgresql://", 1)
+        return f"db+{db_url}"
     
     SECRET_KEY: str = os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
     ALGORITHM: str = "HS256"

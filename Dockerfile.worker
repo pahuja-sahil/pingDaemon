@@ -28,4 +28,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD celery -A app.celery_worker inspect ping || exit 1
 
 # Start Celery worker only
-CMD ["celery", "-A", "app.celery_worker", "worker", "--loglevel=info", "--concurrency=2", "--max-tasks-per-child=100", "--time-limit=300", "--soft-time-limit=240"]
+CMD ["celery", "-A", "app.celery_worker", "worker", "--loglevel=info", "--concurrency=2", "--max-tasks-per-child=100", "--time-limit=300", "--soft-time-limit=240"]docker-compose up -d
