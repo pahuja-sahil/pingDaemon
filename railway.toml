@@ -4,7 +4,7 @@ services = [
     path = ".",
     dockerfile = "Dockerfile.api", 
     startCommand = "./start-api.sh",
-    port = "$PORT",  # Only this line changed
+    port = "$PORT",
     healthcheckPath = "/health",
     restartPolicyType = "ON_FAILURE"
   },
@@ -12,7 +12,6 @@ services = [
     name = "pingdaemon-worker",
     path = ".",
     dockerfile = "Dockerfile.worker",
-    startCommand = "celery -A app.celery_worker worker --loglevel=info --concurrency=2 --max-tasks-per-child=100 --time-limit=300 --soft-time-limit=240",
     restartPolicyType = "ON_FAILURE"
   }
 ]
