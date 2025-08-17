@@ -76,7 +76,7 @@ const HealthCheckModal = ({
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Health Check Results" size="lg">
-      <div className="space-y-6 max-w-none">
+      <div className="space-y-6">
         {/* URL Header */}
         <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <Globe className="w-4 h-4 text-gray-400 dark:text-gray-500 flex-shrink-0" />
@@ -90,14 +90,12 @@ const HealthCheckModal = ({
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="flex items-center justify-center py-8"
+            className="flex flex-col items-center justify-center py-12"
           >
-            <div className="text-center">
-              <LoadingSpinner size="lg" />
-              <p className="mt-3 text-sm text-gray-600 dark:text-gray-400">
-                Checking health status...
-              </p>
-            </div>
+            <LoadingSpinner size="lg" color="primary" />
+            <p className="mt-4 text-sm text-gray-600 dark:text-gray-400 font-medium">
+              Checking health status...
+            </p>
           </motion.div>
         )}
 
@@ -109,7 +107,7 @@ const HealthCheckModal = ({
             className="flex items-start gap-3 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg"
           >
             <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-            <div>
+            <div className="flex-1">
               <h3 className="text-sm font-medium text-red-800 dark:text-red-200">
                 Health Check Failed
               </h3>
