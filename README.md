@@ -47,7 +47,6 @@ POSTGRES_PASSWORD=your_secure_password
 
 # Application URLs
 DATABASE_URL=postgresql://pingdaemon_user:your_secure_password@postgres:5432/pingdaemon
-REDIS_URL=redis://redis:6379/0
 
 # Security
 SECRET_KEY=your-very-secure-secret-key-change-this
@@ -104,7 +103,7 @@ npm run dev
 
 ### Background Services
 
-You'll also need PostgreSQL, Redis, and Celery workers running. See the `docker-compose.yml` file for the complete setup.
+You'll also need PostgreSQL and Celery workers running. See the `docker-compose.yml` file for the complete setup.
 
 ## 📖 How to Use
 
@@ -145,15 +144,13 @@ pingDaemon uses a modern, scalable architecture:
 │   React App     │◄──►│   FastAPI       │◄──►│   PostgreSQL    │
 │   (Frontend)    │    │   (Backend)     │    │   (Database)    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
-                                │
-                       ┌─────────────────┐
-                       │     Redis       │
-                       │  (Task Queue)   │
-                       └─────────────────┘
-                                │
-                       ┌─────────────────┐
-                       │     Celery      │
-                       │ (Health Checks) │
+                                │                        ▲
+                                │                        │
+                                ▼                        │
+                       ┌─────────────────┐               │
+                       │     Celery      │◄──────────────┘
+                       │ (Health Checks) │  PostgreSQL as
+                       │  + Beat Scheduler│  Broker & Backend
                        └─────────────────┘
 ```
 
@@ -161,10 +158,11 @@ pingDaemon uses a modern, scalable architecture:
 
 ### Backend
 - **FastAPI** - High-performance Python web framework
-- **PostgreSQL** - Reliable database for storing monitors and logs
-- **Celery + Redis** - Background task processing for health checks
+- **PostgreSQL** - Reliable database for storing monitors and logs, also serves as Celery broker
+- **Celery** - Background task processing for health checks and scheduled monitoring
 - **SQLAlchemy** - Database ORM with migrations
 - **Resend** - Email delivery service for alerts
+- **Google OAuth** - Secure authentication integration
 
 ### Frontend
 - **React 18 + TypeScript** - Modern UI framework with type safety
