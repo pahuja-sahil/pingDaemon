@@ -45,7 +45,7 @@ const intervalOptions = [
 
 const AddMonitor = () => {
   const navigate = useNavigate();
-  const { createMonitor, immediateHealthCheck } = useMonitors();
+  const { createMonitor } = useMonitors();
   const { toast } = useToast();
   const [isTestingUrl, setIsTestingUrl] = useState(false);
 
@@ -70,7 +70,7 @@ const AddMonitor = () => {
   const onSubmit = async (data: MonitorFormData) => {
     try {
       // Create the monitor - backend automatically schedules health check
-      const newMonitor = await createMonitor.mutateAsync(data);
+      await createMonitor.mutateAsync(data);
       
       // Show success toast for monitor creation
       toast.success('Monitor created successfully! Initial health check scheduled.');
