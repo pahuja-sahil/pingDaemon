@@ -160,14 +160,15 @@ const HealthCheckModal = ({
           </div>
         </motion.div>
 
-        {/* Loading State */}
+        {/* Content Area - Single AnimatePresence for smooth transitions */}
         <AnimatePresence mode="wait">
-          {isLoading && (
+          {isLoading ? (
             <motion.div
+              key="loading"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
               className="flex flex-col items-center justify-center py-16"
             >
               <div className="relative">
@@ -194,7 +195,7 @@ const HealthCheckModal = ({
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.2 }}
+                transition={{ delay: 0.3 }}
                 className="mt-6 text-center"
               >
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
@@ -205,17 +206,13 @@ const HealthCheckModal = ({
                 </p>
               </motion.div>
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Error State */}
-        <AnimatePresence mode="wait">
-          {error && !isLoading && (
+          ) : error ? (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              key="error"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4, ease: "easeOut" }}
               className="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
             >
               <div className="flex items-start gap-4">
@@ -232,24 +229,20 @@ const HealthCheckModal = ({
                 </div>
               </div>
             </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Results */}
-        <AnimatePresence mode="wait">
-          {result && !isLoading && (
+          ) : result ? (
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              key="results"
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.5, ease: "easeOut" }}
               className="space-y-6"
             >
               {/* Overall Status */}
               <motion.div
-                initial={{ scale: 0.95 }}
-                animate={{ scale: 1 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.4, delay: 0.1, ease: "easeOut" }}
                 className={`p-6 rounded-xl border-2 ${statusConfig.borderColor} ${statusConfig.bgColor}`}
               >
                 <div className="flex items-center gap-4">
@@ -273,7 +266,7 @@ const HealthCheckModal = ({
                 <motion.div
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.2 }}
+                  transition={{ duration: 0.4, delay: 0.2, ease: "easeOut" }}
                   className={`p-5 rounded-xl border ${statusCodeConfig.bgColor} border-gray-200 dark:border-gray-700`}
                 >
                   <div className="flex items-center gap-2 mb-3">
@@ -294,7 +287,7 @@ const HealthCheckModal = ({
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.3, delay: 0.3 }}
+                  transition={{ duration: 0.4, delay: 0.3, ease: "easeOut" }}
                   className={`p-5 rounded-xl border ${responseTimeConfig.bgColor} border-gray-200 dark:border-gray-700`}
                 >
                   <div className="flex items-center gap-2 mb-3">
@@ -320,7 +313,7 @@ const HealthCheckModal = ({
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.4 }}
+                  transition={{ duration: 0.4, delay: 0.4, ease: "easeOut" }}
                   className="p-5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl"
                 >
                   <div className="flex items-start gap-3">
@@ -342,7 +335,7 @@ const HealthCheckModal = ({
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: 0.4 }}
+                  transition={{ duration: 0.4, delay: 0.4, ease: "easeOut" }}
                   className="p-5 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-xl"
                 >
                   <div className="flex items-center gap-3">
@@ -354,7 +347,7 @@ const HealthCheckModal = ({
                 </motion.div>
               )}
             </motion.div>
-          )}
+          ) : null}
         </AnimatePresence>
       </div>
     </Modal>
