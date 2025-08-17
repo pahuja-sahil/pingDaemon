@@ -4,8 +4,6 @@
 .env.local
 .env.production
 
-# Project documentation (keep local only)
-.claude
 
 # Backend
 __pycache__/
@@ -59,9 +57,6 @@ logs/
 .dockerignore
 
 # Learning Notes & Project Tracking (keep local only)
-learning-notes.txt
-implementation-checklist.md
-frontend.md
 info.txt
 
 #testing file
