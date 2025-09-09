@@ -1,24 +1,16 @@
-services = [
-  {
-    name = "pingdaemon-api",
-    path = ".",
-    dockerfile = "Dockerfile.api",
-    startCommand = "./start-api.sh",
-    port = "$PORT",
-    healthcheckPath = "/health",
-    restartPolicyType = "ON_FAILURE",
-    variables = {
-      SERVICE_TYPE = "api"
-    }
-  },
-  {
-    name = "pingdaemon-worker", 
-    path = ".",
-    dockerfile = "Dockerfile.worker",
-    startCommand = "celery -A app.celery_worker worker --loglevel=info --concurrency=2",
-    restartPolicyType = "ON_FAILURE",
-    variables = {
-      SERVICE_TYPE = "worker"
-    }
-  }
-]
+[[services]]
+name = "pingdaemon-api"
+dockerfile = "Dockerfile.api"
+
+[services.healthcheck]
+path = "/health"
+
+[services.variables]
+SERVICE_TYPE = "api"
+
+[[services]]
+name = "pingdaemon-worker"
+dockerfile = "Dockerfile.worker"
+
+[services.variables]
+SERVICE_TYPE = "worker"
