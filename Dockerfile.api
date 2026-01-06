@@ -7,6 +7,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y \
     gcc \
     curl \
+    wget \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy requirements first for better caching
@@ -20,12 +21,12 @@ COPY backend/ .
 
 # Create startup script for FastAPI + Celery Beat
 RUN echo '#!/bin/bash\n\
-# Start Celery beat in background (scheduler only)\n\
-celery -A app.celery_worker beat --loglevel=info --detach\n\
-\n\
-# Start FastAPI in foreground\n\
-uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}\n\
-' > /start-api.sh && chmod +x /start-api.sh
+    # Start Celery beat in background (scheduler only)\n\
+    celery -A app.celery_worker beat --loglevel=info --detach\n\
+    \n\
+    # Start FastAPI in foreground\n\
+    uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8000}\n\
+    ' > /start-api.sh && chmod +x /start-api.sh
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash app \
