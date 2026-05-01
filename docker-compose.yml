@@ -41,8 +41,7 @@ services:
         condition: service_healthy
     networks:
       - pingdaemon_network
-    volumes:
-      - ./backend:/app
+
     restart: unless-stopped
 
   # Celery Worker
@@ -66,8 +65,7 @@ services:
         condition: service_healthy
     networks:
       - pingdaemon_network
-    volumes:
-      - ./backend:/app
+
     restart: unless-stopped
 
   # Celery Beat (Scheduler)
@@ -91,8 +89,6 @@ services:
         condition: service_healthy
     networks:
       - pingdaemon_network
-    volumes:
-      - ./backend:/app
     restart: unless-stopped
 
 networks:
